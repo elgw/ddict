@@ -1,0 +1,13 @@
+CFLAGS=-Wall
+
+DEBUG?=0
+
+ifeq ($(DEBUG),1)
+CFLAGS+=-g3 -fsanitize=address
+else
+CFLAGS+=-O3
+LDFLAGS+=-flto
+endif
+
+test: test.c dicts.c
+	$(CC) $(CFLAGS) test.c dicts.c $(LDFLAGS) -o test
