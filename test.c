@@ -7,6 +7,18 @@
 
 // locale -a
 // sudo locale-gen sv_SE.UTF-8
+// Would be nice:
+// Ignore ',', ';', '.' and the case of characters
+// make a proper utf8 word parser
+//
+// compare against the default dict in Python (expected to be much
+// faster than this initial prototype).
+//
+// If we are not afraid of hash collisions we can store the has of the
+// key instead of the actual key (which makes sense when the key is a
+// string). Safety belt off mode.
+//
+
 
 
 #include "dicts.h"
