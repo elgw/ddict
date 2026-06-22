@@ -26,8 +26,9 @@ Scan: 0.001
 Total: 0.020
 ```
 
-Vs, python (where the timings might be dominated by other things than the actual
-dict implementation).
+Vs, Python 3.12.3, where the timings might be dominated by other
+factors besides the actual dict implementation.
+
 ```
 $ stress -c 8 -t 8 ; ./pydict_test.py
 stress: info: [114014] dispatching hogs: 8 cpu, 0 io, 0 vm, 0 hdd

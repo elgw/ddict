@@ -36,20 +36,34 @@ wordhash(const char * word)
 ddict *
 ddict_new() {
     ddict * dict = calloc(1, sizeof(ddict));
+    if(dict == NULL) {
+        return NULL;
+    }
     dict->n_indices = 8;
     dict->indices = malloc(dict->n_indices*sizeof(i32));
+    if(dict->indices == NULL) {
+        free(dict);
+        return NULL;
+    }
     for(u64 kk = 0; kk < dict->n_indices; kk++)
     {
         dict->indices[kk] = -1;
     }
     dict->n_entries_alloc = 4;
     dict->entries = malloc(dict->n_entries_alloc*sizeof(entry));
+    if(dict->entries == NULL)
+    {
+        free(dict->indices);
+        free(dict);
+        return NULL;
+    }
     return dict;
 }
 
 
 void
 ddict_free(ddict * dict) {
+    assert(dict != NULL);
     for(u64 kk = 0; kk < dict->n_entries; kk++) {
         free(dict->entries[kk].key);
     }
@@ -64,20 +78,16 @@ ddict_get_with_hash(const ddict * dict,
                     const char * key, const u64 hash)
 {
     u64 idx = hash % dict->n_indices;
-    int ntries = 0;
     while(1)
     {
-        ntries++;
         if(idx == dict->n_indices) {
             idx = 0;
         }
 
         assert(idx < dict->n_indices);
-        assert(idx >= 0);
-        //printf("idx: %ld, n_indices: %d\n", idx, dict->n_indices);
-        u64 eid = dict->indices[idx]; // entry index
+
+        i32 eid = dict->indices[idx]; // entry index
         if(eid == -1) {
-            //printf("ntries: %d\n", ntries);
             return NULL;
         }
         if(dict->entries[eid].hash != hash)
@@ -126,16 +136,17 @@ ddict_grow_indices(ddict * dict)
     struct timespec t0, t1;
     clock_gettime(CLOCK_REALTIME, &t0);
 #endif
-    i32 n_indices = dict->n_indices;
-    i32 n_indices2 = n_indices*2;
+    assert(dict->n_indices > 0);
+    u64 n_indices = dict->n_indices;
+    u64 n_indices2 = n_indices*2;
     //printf("indices %d -> %d\n", n_indices, n_indices2);
     i32 * indices2 = malloc(n_indices2*sizeof(i32));
-    for(int kk = 0; kk < n_indices2; kk++) {
+    for(u64 kk = 0; kk < n_indices2; kk++) {
         indices2[kk] = -1;
     }
     dict->n_collisions = 0;
 
-    for(int kk = 0; kk < dict->n_entries; kk++)
+    for(u64 kk = 0; kk < dict->n_entries; kk++)
     {
         entry e = dict->entries[kk];
         u64 idx = e.hash % n_indices2;

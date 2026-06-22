@@ -118,52 +118,49 @@ int main(int argc, char ** argv)
     struct timespec t0, t1, t2;
 
     // 1. Create a dictionary from the dictfile
+
+    // https://github.com/Torbacka/wordlist
     const char* dictfile  = "ord.txt";
+    // https://www.gutenberg.org/cache/epub/75742/pg75742.txt
     const char* txtfile = "pg75742.txt";
 
     if(argc > 1) {
         dictfile = argv[1];
     }
+    if(argc > 2) {
+        txtfile = argv[2];
+    }
 
     ddict * dict = ddict_new();
-
     wreader * reader = word_reader_new(dictfile);
-
     clock_gettime(CLOCK_REALTIME, &t0);
     printf("Reading words from %s\n", dictfile);
     int n_dict = 0;
     char * word = NULL;
     while(word_reader_read(reader, &word)) {
-        //printf("'%s'\n", word);
-
         if(ddict_add(dict, word, NULL) == 0) {
             n_dict++;
         }
     }
+
     clock_gettime(CLOCK_REALTIME, &t1);
     word_reader_free(reader);
 
     printf("Added %d words to the dictionary\n", n_dict);
 
-
-    // 2.
-    // Find all words not in the dict from
-    // https://www.gutenberg.org/cache/epub/75742/pg75742.txt
+    // 2. Find all words not in the dict from
+    // the txtfile
     reader = word_reader_new(txtfile);
     printf("Looking for unknown words in %s\n", txtfile);
     int n_known = 0;
     int n_unknown = 0;
     while(word_reader_read(reader, &word))
     {
-        entry * e = NULL;
-        if((e = ddict_get(dict, word)) != NULL){
-            //printf(" Known\n");
+        if(ddict_get(dict, word) != NULL){
             n_known++;
         } else {
             n_unknown++;
-            //printf(" Unknown\n");
         }
-
     }
     word_reader_free(reader);
     clock_gettime(CLOCK_REALTIME, &t2);
@@ -180,5 +177,5 @@ int main(int argc, char ** argv)
     printf("Construct: %.3f\n", timespec_diff(&t1, &t0));
     printf("Scan: %.3f\n", timespec_diff(&t2, &t1));
     printf("Total: %.3f\n", timespec_diff(&t2, &t0));
-
+    return EXIT_SUCCESS;
 }

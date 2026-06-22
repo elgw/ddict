@@ -1,4 +1,4 @@
-CFLAGS=-Wall
+CFLAGS=-Wall -Wextra -pedantic
 
 DEBUG?=0
 
@@ -8,6 +8,9 @@ else
 CFLAGS+=-O3
 LDFLAGS+=-flto
 endif
+
+# consider also -fanalyzer and
+# scan-build
 
 test: test_ddict.c ddict.c
 	$(CC) $(CFLAGS) test_ddict.c ddict.c $(LDFLAGS) -o test_ddict
