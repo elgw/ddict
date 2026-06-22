@@ -39,3 +39,11 @@ Construct: 0.048
 Scan: 0.005
 Total: 0.053
 ```
+
+## TODO
+
+- [ ] Unit tests
+- [ ] update by key
+- [ ] remove by key
+- [ ] serialize and de-serialize
+- [ ] more efficient key storage

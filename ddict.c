@@ -84,8 +84,6 @@ ddict_get_with_hash(const ddict * dict,
             idx = 0;
         }
 
-        assert(idx < dict->n_indices);
-
         i32 eid = dict->indices[idx]; // entry index
         if(eid == -1) {
             return NULL;
@@ -180,10 +178,11 @@ ddict_add(ddict * dict,
     const u64 hash = wordhash(word);
 
     // See if in dictionary
-    if(ddict_get_with_hash(dict, word, hash) != NULL)
-    {
+    if(ddict_get_with_hash(dict, word, hash) != NULL) {
         return 1;
     }
+
+    // Increase capacities if needed
     if(dict->n_entries == dict->n_entries_alloc) {
         ddict_grow_entries(dict);
     }
@@ -191,12 +190,13 @@ ddict_add(ddict * dict,
         ddict_grow_indices(dict);
     }
 
+    // Add at the end of the list of entries
     dict->entries[dict->n_entries].hash = hash;
     dict->entries[dict->n_entries].key = strdup(word);
     dict->entries[dict->n_entries].value = value;
 
+    // Figure out where we can insert a reference
     u64 idx = hash % dict->n_indices;
-    assert(idx < dict->n_indices);
     while(dict->indices[idx] != -1) {
         idx++;
         if(idx == dict->n_indices) {
