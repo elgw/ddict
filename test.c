@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <ctype.h>
 #include <locale.h> // for isprint
+#include <time.h>
 
 // locale -a
 // sudo locale-gen sv_SE.UTF-8
@@ -19,6 +20,12 @@
 // string). Safety belt off mode.
 //
 
+double timespec_diff(struct timespec* end, struct timespec * start)
+{
+    double elapsed = (end->tv_sec - start->tv_sec);
+    elapsed += (end->tv_nsec - start->tv_nsec) / 1000000000.0;
+    return elapsed;
+}
 
 
 #include "dicts.h"
@@ -120,10 +127,12 @@ word_reader_read(wreader * reader, char ** result)
 
 int main(int argc, char ** argv)
 {
-    char * loc = setlocale(LC_ALL, "sv_SE.UTF-8");
-    printf("Locale: %s\n", loc);
+    struct timespec t0, t1, t2;
+
+    //char * loc = setlocale(LC_ALL, "sv_SE.UTF-8");
+    //printf("Locale: %s\n", loc);
     // 1. Create a dictionary from
-    const char* dictfile  = "/home/erikw/code/Torbacka/wordlist/ord.txt";
+    const char* dictfile  = "ord.txt";
     const char* txtfile = "pg75742.txt";
 
     if(argc > 1) {
@@ -134,6 +143,7 @@ int main(int argc, char ** argv)
 
     wreader * reader = word_reader_new(dictfile);
 
+    clock_gettime(CLOCK_REALTIME, &t0);
     printf("Reading words from %s\n", dictfile);
     int n_dict = 0;
     char * word = NULL;
@@ -152,7 +162,7 @@ int main(int argc, char ** argv)
     }
     word_reader_free(reader);
     printf("Added %d words to the dictionary\n", n_dict);
-
+    clock_gettime(CLOCK_REALTIME, &t1);
 
     // 2.
     // Find all words not in the dict from
@@ -177,6 +187,7 @@ int main(int argc, char ** argv)
 
     }
     word_reader_free(reader);
+    clock_gettime(CLOCK_REALTIME, &t2);
 
 
     // 3. Count the word frequency and print the 10 most common
@@ -184,4 +195,9 @@ int main(int argc, char ** argv)
     // done
     spdict_free(dict);
     printf("Found %d known and %d unknown words\n", n_known, n_unknown);
+
+    printf("Construct: %.3f\n", timespec_diff(&t1, &t0));
+    printf("Scan: %.3f\n", timespec_diff(&t2, &t1));
+    printf("Total: %.3f\n", timespec_diff(&t2, &t0));
+
 }
