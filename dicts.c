@@ -8,7 +8,7 @@ typedef uint64_t i64;
 
 spdict * spdict_new() {
     spdict * dict = calloc(1, sizeof(spdict));
-    dict->nbin = 100000;
+    dict->nbin = 4096;
     dict->bins = calloc(dict->nbin, sizeof(spelement*));
     dict->bin_capacity = calloc(dict->nbin, sizeof(int));
     dict->bin_contents = calloc(dict->nbin, sizeof(int));
@@ -52,10 +52,11 @@ int spdict_get(const spdict * dict, const char * word, void ** value)
     spelement * bin = dict->bins[h];
     for(int kk = 0; kk < dict->bin_contents[h]; kk++)
     {
-        if(strcmp(bin[kk].key, word) == 0)
-        {
-            return 1;
-            value[0] = bin[kk].value;
+        if(bin[kk].hash == h) {
+            if(strcmp(bin[kk].key, word) == 0) {
+                return 1;
+                value[0] = bin[kk].value;
+            }
         }
     }
     return 0;
@@ -82,6 +83,7 @@ spdict_add(spdict * dict,
     }
     // Insert at end
     spelement * bin = &(dict->bins[h][dict->bin_contents[h]]);
+    bin->hash = h;
     bin->key = strdup(word);
     bin->value = value;
     dict->bin_contents[h]++;

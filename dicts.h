@@ -17,6 +17,7 @@
 // - timings!
 
 typedef struct {
+    int64_t hash;
     char * key;
     void * value;
 } spelement;
@@ -32,9 +33,11 @@ typedef struct {
     int * bin_contents;
 } spdict;
 
+
 spdict * spdict_new();
 
 void spdict_free(spdict * dict);
+
 
 // See if an element is already in the dictionary
 int

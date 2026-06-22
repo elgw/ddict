@@ -9,5 +9,5 @@ CFLAGS+=-O3
 LDFLAGS+=-flto
 endif
 
-test: test.c dicts.c
-	$(CC) $(CFLAGS) test.c dicts.c $(LDFLAGS) -o test
+test: test.c ddict.c
+	$(CC) $(CFLAGS) test.c ddict.c $(LDFLAGS) -o test
