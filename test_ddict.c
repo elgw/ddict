@@ -3,22 +3,9 @@
 #include <assert.h>
 #include <stdint.h>
 #include <ctype.h>
-#include <locale.h> // for isprint
 #include <time.h>
 
-// locale -a
-// sudo locale-gen sv_SE.UTF-8
-// Would be nice:
-// Ignore ',', ';', '.' and the case of characters
-// make a proper utf8 word parser
-//
-// compare against the default dict in Python (expected to be much
-// faster than this initial prototype).
-//
-// If we are not afraid of hash collisions we can store the has of the
-// key instead of the actual key (which makes sense when the key is a
-// string). Safety belt off mode.
-//
+#include "ddict.h"
 
 static double timespec_diff(struct timespec* end, struct timespec * start)
 {
@@ -28,8 +15,7 @@ static double timespec_diff(struct timespec* end, struct timespec * start)
 }
 
 
-//#include "dicts.h"
-#include "ddict.h"
+
 
 typedef int64_t i64;
 
@@ -62,27 +48,28 @@ word_reader_free(wreader * reader)
     return;
 }
 
-int isprintsv(const uint8_t c)
+int is_whitespace(const char c)
 {
-    if(isspace(c)){
-        return 0;
+    switch(c){
+    case ' ':
+        return 1;
+    case '\n':
+        return 1;
+    case '\t':
+        return 1;
+    case '\f':
+        return 1;
+    case '\r':
+        return 1;
     }
-    //printf("c=%d (0xC3=%d) ", c, 0xC3);
-    if(c == 0xC3) return 2; // Next byte should be accepted as well
-    return isprint(c);
+    return 0;
 }
 
 int
 word_reader_read(wreader * reader, char ** result)
 {
-    // better to read a multibyte character at a time
-    // getchar_u(fid, &bytes, &nbytes);
-    i64 pos = ftell(reader->fid);
     int c;
-
-    // 0 -- no printable character found (yet)
-    // 1 -- in region with printable characters
-    int wpos = 0;
+    int wpos = 0; // where to write in the output buffer
 
     while(1){
         if(wpos + 1 == reader->buf_size)
@@ -90,40 +77,40 @@ word_reader_read(wreader * reader, char ** result)
             fprintf(stderr, "Out of buffer\n");
             exit(EXIT_FAILURE);
         }
-        c = fgetc(reader->fid);
 
+        c = fgetc(reader->fid);
         if(c == EOF){
+            if(wpos > 0) {
+                goto return_word;
+            }
             return 0;
         }
 
-        pos++;
         if(wpos == 0) {
-            int nb = isprintsv(c);
-            reader->word[wpos++] = c;
-
-            if(nb == 2) {
-                c = fgetc(reader->fid);
-                reader->word[wpos++] = c;
+            if(is_whitespace(c)){
+                continue;
             }
+            reader->word[wpos++] = c;
             continue;
         }
 
-        int nb = isprintsv(c);
-        if(nb > 0) {
+        if(is_whitespace(c)){
+            goto return_word;
+        } else {
             reader->word[wpos++] = c;
-            if(nb == 2) {
-                c = fgetc(reader->fid);
-                reader->word[wpos++] = c;
-            }
             continue;
         }
-
-        reader->word[wpos++] = '\0';
-        result[0] = reader->word;
-        return 1;
+        goto return_word;
     }
+
     assert(0);
     return 0;
+
+return_word:
+    ;
+    reader->word[wpos] = '\0';
+    result[0] = reader->word;
+    return 1;
 }
 
 int main(int argc, char ** argv)
@@ -147,7 +134,8 @@ int main(int argc, char ** argv)
     int n_dict = 0;
     char * word = NULL;
     while(word_reader_read(reader, &word)) {
-// printf("%s\n", word);
+        //printf("'%s'\n", word);
+
         if(ddict_add(dict, word, NULL) == 0) {
             n_dict++;
         }
@@ -172,8 +160,6 @@ int main(int argc, char ** argv)
             //printf(" Known\n");
             n_known++;
         } else {
-            //spdict_add(dict, word, NULL);
-            //printf("%s\n", word);
             n_unknown++;
             //printf(" Unknown\n");
         }

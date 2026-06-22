@@ -1,3 +1,5 @@
+#!/bin/env python
+
 import time
 
 dictfile = "ord.txt"
@@ -13,6 +15,7 @@ with open(dictfile, 'r') as fid:
 t1 = time.perf_counter()
 n_known = 0
 n_unknown = 0
+print(f'Added {len(dict1)} words to the dictionary')
 
 with open(txtfile, 'r') as fid:
     for line in fid:
@@ -21,7 +24,9 @@ with open(txtfile, 'r') as fid:
                 n_known = n_known +1
             else:
                 n_unknown = n_unknown + 1
+
 t2 = time.perf_counter()
+
 print(f'Found {n_known} known and {n_unknown} unknown words')
 print(f'Construct: {t1-t0:.3f}')
 print(f'Scan: {t2-t1:.3f}')
