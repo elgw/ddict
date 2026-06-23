@@ -12,5 +12,5 @@ endif
 # consider also -fanalyzer and
 # scan-build
 
-test: test_ddict.c ddict.c
+test_ddict: test_ddict.c ddict.c
 	$(CC) $(CFLAGS) test_ddict.c ddict.c $(LDFLAGS) -o test_ddict
