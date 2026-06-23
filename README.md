@@ -2,17 +2,13 @@
 
 An throwaway implementation of a dict data structure inspired by the approach taken by [Python](https://github.com/python/cpython/blob/main/Objects/dictobject.c) which is described in this [blog post](https://morepypy.blogspot.com/2015/01/faster-more-memory-efficient-and-more.html).
 
-- Incomplete functionality for most uses.
 - Performance in the expected range (see below).
 - All keys are either owned by the dictionary or handled externally.
 - Optional to store the hash values or calculate them on the fly when needed (define `DDICT_DROP_HASH`).
-- A "safer" version should use randomized hash functions for security
-  reasons.
 - Can be built with C99 or above with clang/gcc/musl-gcc.
 
 ## Timings
-In this case we create a dictionary, where each line in the file
-`ord.txt` is added as a key:
+A list of words, one per line is used to construct a dictionary:
 
 ```
 $ wget https://raw.githubusercontent.com/Torbacka/wordlist/refs/heads/master/saol2018clean.csv
@@ -23,7 +19,7 @@ $ uniq dictwords.txt  | wc
  122475
 ```
 
-Each word in
+Then each word in a text file is scanned against the dictionary:
 
 ```
 $ wget https://www.gutenberg.org/ebooks/75742.txt.utf-8
@@ -32,8 +28,6 @@ $ wc 75742.txt.utf-8
 $ mv 75742.txt.utf-8 text.txt
 ```
 
-is scanned against the dictionary to identify which words were not in
-the dictionary file.
 
 ```
 -> Managed keys
@@ -103,5 +97,3 @@ Total time: 30.041463ms
 - [ ] update by key
 - [ ] remove by key
 - [ ] serialize and de-serialize
-- [ ] more efficient key storage
-- [ ] comparisons might be more fair with one word per line?

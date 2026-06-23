@@ -1,16 +1,11 @@
 package main
 
-// go run .
-// compile with
-// $ go build
-
 import (
 	"os"
 	"log"
 	"bufio"
 	"fmt"
 	"time"
-	//"regexp"
 	"strings"
 )
 
