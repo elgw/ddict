@@ -46,11 +46,17 @@ $ mv 75742.txt.utf-8 text.txt
 | Go-1.26.4           | 28.2             | 1.8         |
 | Python-3.12.3       | 35.5             | 6.0         |
 
-```
+
+
 
 <details>
 <summary>Command line output from the benchmarks</summary>
 
+Please note that the timings might be dominated by other factors
+besides the actual dict implementation, e.g. file parsing,
+encapsulation, garbage collection etc.
+
+```
 -> Managed keys
 Reading lines from ord.txt
 Added 122475 words to the dictionary
@@ -86,8 +92,7 @@ Scan: 1.465 ms
 Total: 13.215 ms
 ```
 
-Vs, Python 3.12.3, where the timings might be dominated by other
-factors besides the actual dict implementation.
+Python 3.12.3
 
 ```
 $ stress -c 8 -t 8 ; python test/pydict.py
@@ -98,7 +103,7 @@ Scan: 5.959 ms
 Total: 40.440 ms
 ```
 
-Vs go 1.26.4
+Go 1.26.4
 
 ```
 $ cd test/go/
