@@ -149,7 +149,9 @@ ddict_grow_indices(ddict * dict)
     for(u64 kk = 0; kk < n_indices2; kk++) {
         indices2[kk] = -1;
     }
+#ifdef DDICT_STATS
     dict->n_collisions = 0;
+#endif
 
     for(u64 kk = 0; kk < dict->n_entries; kk++)
     {
@@ -165,7 +167,9 @@ ddict_grow_indices(ddict * dict)
             if(idx == n_indices2) {
                 idx = 0;
             }
+#ifdef DDICT_STATS
             dict->n_collisions++;
+#endif
         }
         indices2[idx] = kk;
     }
@@ -220,7 +224,9 @@ ddict_add(ddict * dict,
         if(idx == dict->n_indices) {
             idx = 0;
         }
+#ifdef DDICT_STATS
         dict->n_collisions++;
+#endif
     }
     dict->indices[idx] = dict->n_entries;
     dict->n_entries++;

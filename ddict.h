@@ -1,22 +1,31 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdlib.h>
 #include <stdint.h>
 
-// Dense dictionary, similar to (but less sophisticated) what is found in Python
-// Owns all the keys (makes copies of them and frees them at exit)
-// Grows dynamically when needed
-// Using Open Addressing with Linear Probing
+// A dense key storage dictionary data structure, similar to what is
+// found in Python but less sophisticated
 //
-// keys will be scanned until a '\0' is found
+// - Grows dynamically when needed
 //
-// They key copying can probably be significanlty faster
-// if we use an arena/pool allocator/allocation.
+// - Using Open Addressing with Linear Probing
+//
+// - Can either own all the keys, i.e. makes copies of them and make
+// sure to free them at the end, or have the caller own the keys.
+//
+// - Only string keys, will be scanned until a '\0' is found
+//
+// - If the hash value is cheap to compute, there is no need to save
+// them, disable hash storage by defining DDICT_DROP_HASH below.
+//
 
-// If the hash value is cheap to compute,
-// there is no need to save it
+
 // #define DDICT_DROP_HASH
-// to skip it
+// #define DDICT_STATS
 
 typedef struct {
 #ifndef DDDICT_DROP_HASH
@@ -25,6 +34,7 @@ typedef struct {
     char * key;
     void * value;
 } entry;
+
 
 
 typedef struct {
@@ -37,8 +47,9 @@ typedef struct {
     uint64_t n_entries;
     // Total number of entries
     uint64_t n_entries_alloc;
-    // Not used ...
+#ifdef DDICT_STATS
     uint64_t n_collisions;
+#endif
     // If the dict should allocate and store private copies
     // of the keys
     int manage_keys;
@@ -61,3 +72,7 @@ entry * ddict_get(const ddict *, const char * key);
 int
 ddict_add(ddict * dict,
           char * key, void * value);
+
+#ifdef __cplusplus
+}
+#endif
