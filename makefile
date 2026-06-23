@@ -5,12 +5,12 @@ DEBUG?=0
 ifeq ($(DEBUG),1)
 CFLAGS+=-g3 -fsanitize=address
 else
-CFLAGS+=-O3 -ffast-math
+CFLAGS+=-O3 -ffast-math -I./include
 LDFLAGS+=-flto
 endif
 
 # consider also -fanalyzer and
 # scan-build
 
-test_ddict: test_ddict.c ddict.c
-	$(CC) $(CFLAGS) test_ddict.c ddict.c $(LDFLAGS) -o test_ddict
+ddict_test: ddict_test.c src/ddict.c
+	$(CC) $(CFLAGS) ddict_test.c src/ddict.c $(LDFLAGS) -o ddict_test

@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	f, err := os.Open("../ord.txt")
+	f, err := os.Open("../../dictwords.txt")
 
 	if err != nil {
 		log.Fatal(err)
@@ -44,7 +44,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	f2, err := os.Open("../pg75742.txt")
+	f2, err := os.Open("../../text.txt")
 
 	if err != nil {
 		log.Fatal(err)

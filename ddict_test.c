@@ -90,7 +90,8 @@ wreader * word_reader_new(const char * fname)
     if(reader->fid == NULL)
     {
         free(reader);
-        return NULL;
+        fprintf(stderr, "Unable to open %s\n", fname);
+        exit(EXIT_FAILURE);
     }
     reader->buf_size = 1024;
     reader->word = malloc(reader->buf_size);
@@ -180,6 +181,11 @@ ddict * dict_from_file(const char * dictfile)
     char * line = NULL;
     size_t line_len = 0;
     FILE * fid = fopen(dictfile, "r");
+    if(fid == NULL)
+    {
+        fprintf(stderr, "Unable to open %s\n", dictfile);
+        exit(EXIT_FAILURE);
+    }
     while(getline(&line, &line_len, fid) != -1) {
         line[strlen(line)-1] = '\0';
         if(ddict_add(dict, line, NULL) == 0) {
@@ -290,10 +296,8 @@ int test_dict_keys(const char * dictfile, const char * txtfile, int manage_keys)
 
 int main(int argc, char ** argv)
 {
-    // https://github.com/Torbacka/wordlist
-    const char* dictfile  = "ord.txt";
-    // https://www.gutenberg.org/cache/epub/75742/pg75742.txt
-    const char* txtfile = "pg75742.txt";
+    const char* dictfile  = "dictwords.txt";
+    const char* txtfile = "text.txt";
 
     if(argc > 1) {
         dictfile = argv[1];

@@ -8,24 +8,28 @@ An throwaway implementation of a dict data structure inspired by the approach ta
 - Optional to store the hash values or calculate them on the fly when needed (define `DDICT_DROP_HASH`).
 - A "safer" version should use randomized hash functions for security
   reasons.
+- Can be built with C99 or above with clang/gcc/musl-gcc.
 
 ## Timings
 In this case we create a dictionary, where each line in the file
 `ord.txt` is added as a key:
 
 ```
-$ wc ord.txt
- 124761  125031 1440709 ord.txt
-$ uniq ord.txt  | wc
+$ wget https://raw.githubusercontent.com/Torbacka/wordlist/refs/heads/master/saol2018clean.csv
+$ awk -F, '{print $2}' saol2018clean.csv > dictwords.txt
+$ wc dictwords.txt
+ 124761  125031 1440709 dictwords.txt
+$ uniq dictwords.txt  | wc
  122475
-$ stress -c 8 -t 8 ; ./test_ddict
 ```
 
 Each word in
 
 ```
-$ wc pg75742.txt
-  2142  18350 124696 pg75742.txt
+$ wget https://www.gutenberg.org/ebooks/75742.txt.utf-8
+$ wc 75742.txt.utf-8
+  2142  18350 124696 75742.txt.utf-8
+$ mv 75742.txt.utf-8 text.txt
 ```
 
 is scanned against the dictionary to identify which words were not in
@@ -71,7 +75,7 @@ Vs, Python 3.12.3, where the timings might be dominated by other
 factors besides the actual dict implementation.
 
 ```
-$ stress -c 8 -t 8 ; ./pydict_test.py
+$ stress -c 8 -t 8 ; python test/pydict.py
 dded 122475 words to the dictionary
 Found 9070 known and 9280 unknown words
 Construct: 34.481 ms
@@ -82,7 +86,7 @@ Total: 40.440 ms
 Vs go 1.26.4
 
 ```
-$ cd testgo
+$ cd test/go/
 $ go build
 $ stress -c 8 -t 8 ; ./dict
 Construction took 28.234787ms

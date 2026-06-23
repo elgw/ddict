@@ -22,6 +22,18 @@ static double timespec_diff(struct timespec* end, struct timespec * start)
 }
 #endif
 
+
+static char *
+ddict_strdup(const char *str)
+{
+    size_t n = strlen(str) + 1;
+    char * cpy = malloc(n);
+    if(cpy == NULL) {
+        return NULL;
+    }
+    return memcpy (cpy, str, n);
+}
+
 static u64
 wordhash(const char * word)
 {
@@ -210,7 +222,7 @@ ddict_add(ddict * dict,
     dict->entries[dict->n_entries].hash = hash;
 #endif
     if(dict->manage_keys) {
-        dict->entries[dict->n_entries].key = strdup(word);
+        dict->entries[dict->n_entries].key = ddict_strdup(word);
     } else {
         dict->entries[dict->n_entries].key = word;
     }
