@@ -5,10 +5,17 @@ An throwaway implementation of a dict data structure inspired by the approach ta
 - Performance in the expected range (see below).
 - All keys are either owned by the dictionary or handled externally.
 - Optional to store the hash values or calculate them on the fly when needed (define `DDICT_DROP_HASH`).
-- Can be built with C99 or above with clang/gcc/musl-gcc.
+- Can be built with clang/gcc/musl-gcc, C99 standard or above.
 
 ## Timings
-A list of words, one per line is used to construct a dictionary:
+A file with one word per line is used to construct a dictionary, then
+each word in another text file is scanned against the dictionary. By
+default the test programs assumes that these are called
+`dictwords.txt` and `text.txt`.
+
+<details><summary>Get the input files used for the test below</summary>
+
+- `dictwords.txt`
 
 ```
 $ wget https://raw.githubusercontent.com/Torbacka/wordlist/refs/heads/master/saol2018clean.csv
@@ -19,7 +26,8 @@ $ uniq dictwords.txt  | wc
  122475
 ```
 
-Then each word in a text file is scanned against the dictionary:
+- `text.txt`
+
 
 ```
 $ wget https://www.gutenberg.org/ebooks/75742.txt.utf-8
@@ -27,9 +35,23 @@ $ wc 75742.txt.utf-8
   2142  18350 124696 75742.txt.utf-8
 $ mv 75742.txt.utf-8 text.txt
 ```
+</details>
+
+| method        | t_construct [ms] | t_scan [ms] |
+|---------------|------------------|-------------|
+| ddict-managed | 17.6             | 1.4         |
+| ddict-xternal | 9.4              | 1.3         |
+| ddict-m-drop  | 20.0             | 1.6         |
+| ddict-x-drop  | 11.8             | 1.5         |
+| Python-3.12.3 | 35.5             | 6.0         |
+| Go-1.26.4     | 28.2             | 1.8         |
 
 
 ```
+
+<details>
+<summary>Command line output from the benchmarks</summary>
+
 -> Managed keys
 Reading lines from ord.txt
 Added 122475 words to the dictionary
@@ -90,6 +112,7 @@ n_words  18350
 Known:  9070  unknown:  9280
 Total time: 30.041463ms
 ```
+</details>
 
 ## TODO
 
