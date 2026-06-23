@@ -33,10 +33,7 @@ func main() {
 	// Add all words
 	for scanner.Scan() {
 		var line = scanner.Text()
-		words := strings.Fields(line)
-		for _, word := range words{
-			m[word] = 1
-		}
+		m[line] = 1
 	}
 	t1 := time.Since(t0)
 	fmt.Println("Construction took", t1)

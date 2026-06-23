@@ -10,45 +10,61 @@ An throwaway implementation of a dict data structure inspired by the approach ta
   reasons.
 
 ## Timings
+In this case we create a dictionary, where each line in the file
+`ord.txt` is added as a key:
 
 ```
+$ wc ord.txt
+ 124761  125031 1440709 ord.txt
+$ uniq ord.txt  | wc
+ 122475
 $ stress -c 8 -t 8 ; ./test_ddict
 ```
 
+Each word in
+
+```
+$ wc pg75742.txt
+  2142  18350 124696 pg75742.txt
+```
+
+is scanned against the dictionary to identify which words were not in
+the dictionary file.
+
 ```
 -> Managed keys
-Reading words from ord.txt
-Added 122446 words to the dictionary
+Reading lines from ord.txt
+Added 122475 words to the dictionary
 Looking for unknown words in pg75742.txt
-Found 9157 known and 9193 unknown words
-Construct: 21.351 ms
-Scan: 1.486 ms
-Total: 22.837 ms
+Found 9070 known and 9280 unknown words
+Construct: 17.549 ms
+Scan: 1.352 ms
+Total: 18.902 ms
 
 -> External keys
-Allocated 1440709 bytes
+Added 122475 words to the dictionary
 Looking for unknown words in pg75742.txt
-Found 9157 known and 9193 unknown words
-Construct: 13.232 ms
-Scan: 1.667 ms
-Total: 14.899 ms
+Found 9070 known and 9280 unknown words
+Construct: 9.539 ms
+Scan: 1.305 ms
+Total: 10.844 ms
 
 -> Managed keys & DDICT_DROP_HASH
-Reading words from ord.txt
-Added 122446 words to the dictionary
+Reading lines from ord.txt
+Added 122475 words to the dictionary
 Looking for unknown words in pg75742.txt
-Found 9157 known and 9193 unknown words
-Construct: 23.988 ms
-Scan: 2.713 ms
-Total: 26.701 ms
+Found 9070 known and 9280 unknown words
+Construct: 19.926 ms
+Scan: 1.607 ms
+Total: 21.533 ms
 
 -> External keys & DDICT_DROP_HASH
-Added 125030 words to the dictionary
+Added 122475 words to the dictionary
 Looking for unknown words in pg75742.txt
-Found 9157 known and 9193 unknown words
-Construct: 17.223 ms
-Scan: 1.571 ms
-Total: 18.794 ms
+Found 9070 known and 9280 unknown words
+Construct: 11.751 ms
+Scan: 1.465 ms
+Total: 13.215 ms
 ```
 
 Vs, Python 3.12.3, where the timings might be dominated by other
@@ -56,25 +72,25 @@ factors besides the actual dict implementation.
 
 ```
 $ stress -c 8 -t 8 ; ./pydict_test.py
-Added 122446 words to the dictionary
-Found 9157 known and 9193 unknown words
-Construct: 46.872 ms
-Scan: 5.976 ms
-Total: 52.847 ms
+dded 122475 words to the dictionary
+Found 9070 known and 9280 unknown words
+Construct: 34.481 ms
+Scan: 5.959 ms
+Total: 40.440 ms
 ```
 
 Vs go 1.26.4
 
 ```
-$  cd testgo
+$ cd testgo
 $ go build
 $ stress -c 8 -t 8 ; ./dict
-Construction took 36.600434ms
-122446  words added to the dictionary
-Scanning took 1.775793ms
+Construction took 28.234787ms
+122475  words added to the dictionary
+Scanning took 1.806676ms
 n_words  18350
-Known:  9157  unknown:  9193
-Total time: 38.376227ms
+Known:  9070  unknown:  9280
+Total time: 30.041463ms
 ```
 
 ## TODO

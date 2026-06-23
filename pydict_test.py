@@ -10,8 +10,7 @@ dict1 = dict()
 t0 = time.perf_counter()
 with open(dictfile, 'r') as fid:
     for line in fid:
-        for word in line.split():
-            dict1[word] = 0
+        dict1[line.strip()] = 0
 t1 = time.perf_counter()
 n_known = 0
 n_unknown = 0

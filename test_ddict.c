@@ -174,18 +174,21 @@ return_word:
 ddict * dict_from_file(const char * dictfile)
 {
     ddict * dict = ddict_new(1);
-    wreader * reader = word_reader_new(dictfile);
 
-    printf("Reading words from %s\n", dictfile);
+    printf("Reading lines from %s\n", dictfile);
     int n_dict = 0;
-    char * word = NULL;
-    while(word_reader_read(reader, &word)) {
-        if(ddict_add(dict, word, NULL) == 0) {
+    char * line = NULL;
+    size_t line_len = 0;
+    FILE * fid = fopen(dictfile, "r");
+    while(getline(&line, &line_len, fid) != -1) {
+        line[strlen(line)-1] = '\0';
+        if(ddict_add(dict, line, NULL) == 0) {
             n_dict++;
         }
     }
 
-    word_reader_free(reader);
+    free(line);
+    fclose(fid);
     printf("Added %d words to the dictionary\n", n_dict);
     return dict;
 }
@@ -196,12 +199,14 @@ ddict * dict_from_buffer(const char * buffer, size_t buffer_len)
 {
     ddict * dict = ddict_new(0);
     ddict_add(dict, (char*) &buffer[0], NULL);
-    int n_dict = 0;
-    for(size_t kk = 1; kk+1 < buffer_len; kk++) {
+    int n_dict = 1;
+    for(size_t kk = 1; kk < buffer_len; kk++) {
         if(buffer[kk-1] == '\0'){
             if(buffer[kk] != '\0') {
-                ddict_add(dict, (char*) &buffer[kk], NULL);
-                n_dict++;
+
+                if(ddict_add(dict, (char*) &buffer[kk], NULL) == 0) {
+                    n_dict++;
+                }
             }
         }
     }
@@ -223,7 +228,7 @@ char * read_and_split(const char * file, size_t * _file_size)
     *_file_size = file_size;
     // Replace blacks by '\0'
     for(size_t kk = 0; kk < file_size; kk++) {
-        if(is_whitespace(buf[kk])) {
+        if(buf[kk] == '\n') {
             buf[kk] = '\0';
         }
     }
