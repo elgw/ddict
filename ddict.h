@@ -13,9 +13,15 @@
 // They key copying can probably be significanlty faster
 // if we use an arena/pool allocator/allocation.
 
+// If the hash value is cheap to compute,
+// there is no need to save it
+// #define DDICT_DROP_HASH
+// to skip it
 
 typedef struct {
+#ifndef DDDICT_DROP_HASH
     uint64_t hash;
+#endif
     char * key;
     void * value;
 } entry;
@@ -33,10 +39,13 @@ typedef struct {
     uint64_t n_entries_alloc;
     // Not used ...
     uint64_t n_collisions;
+    // If the dict should allocate and store private copies
+    // of the keys
+    int manage_keys;
 } ddict;
 
 // Create a new dictionary with the default size
-ddict * ddict_new();
+ddict * ddict_new(int manage_keys);
 
 // Free the dictionary and all the key copies that it holds
 void ddict_free(ddict * dict);
@@ -51,4 +60,4 @@ entry * ddict_get(const ddict *, const char * key);
 // Returns 0 on success.
 int
 ddict_add(ddict * dict,
-          const char * key, void * value);
+          char * key, void * value);

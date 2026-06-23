@@ -34,11 +34,12 @@ wordhash(const char * word)
 }
 
 ddict *
-ddict_new() {
+ddict_new(int manage_keys) {
     ddict * dict = calloc(1, sizeof(ddict));
     if(dict == NULL) {
         return NULL;
     }
+    dict->manage_keys = manage_keys;
     dict->n_indices = 8;
     dict->indices = malloc(dict->n_indices*sizeof(i32));
     if(dict->indices == NULL) {
@@ -64,8 +65,10 @@ ddict_new() {
 void
 ddict_free(ddict * dict) {
     assert(dict != NULL);
-    for(u64 kk = 0; kk < dict->n_entries; kk++) {
-        free(dict->entries[kk].key);
+    if(dict->manage_keys) {
+        for(u64 kk = 0; kk < dict->n_entries; kk++) {
+            free(dict->entries[kk].key);
+        }
     }
     free(dict->entries);
     free(dict->indices);
@@ -88,11 +91,15 @@ ddict_get_with_hash(const ddict * dict,
         if(eid == -1) {
             return NULL;
         }
+
+#ifndef DDICT_DROP_HASH
         if(dict->entries[eid].hash != hash)
         {
             idx++;
             continue;
         }
+#endif
+
         if(strcmp(key, dict->entries[eid].key) == 0)
         {
             return &(dict->entries[eid]);
@@ -147,7 +154,11 @@ ddict_grow_indices(ddict * dict)
     for(u64 kk = 0; kk < dict->n_entries; kk++)
     {
         entry e = dict->entries[kk];
+#ifdef DDICT_DROP_HASH
+        u64 idx = wordhash(e.key) % n_indices2;
+#else
         u64 idx = e.hash % n_indices2;
+#endif
         // Linear probing
         while(indices2[idx] != -1) {
             idx++;
@@ -173,7 +184,7 @@ ddict_grow_indices(ddict * dict)
 // elements
 int
 ddict_add(ddict * dict,
-          const char * word, void * value)
+          char * word, void * value)
 {
     const u64 hash = wordhash(word);
 
@@ -191,8 +202,15 @@ ddict_add(ddict * dict,
     }
 
     // Add at the end of the list of entries
+#ifndef DDICT_DROP_HASH
     dict->entries[dict->n_entries].hash = hash;
-    dict->entries[dict->n_entries].key = strdup(word);
+#endif
+    if(dict->manage_keys) {
+        dict->entries[dict->n_entries].key = strdup(word);
+    } else {
+        dict->entries[dict->n_entries].key = word;
+    }
+
     dict->entries[dict->n_entries].value = value;
 
     // Figure out where we can insert a reference

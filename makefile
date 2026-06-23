@@ -5,7 +5,7 @@ DEBUG?=0
 ifeq ($(DEBUG),1)
 CFLAGS+=-g3 -fsanitize=address
 else
-CFLAGS+=-O3
+CFLAGS+=-O3 -ffast-math
 LDFLAGS+=-flto
 endif
 

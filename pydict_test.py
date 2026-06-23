@@ -28,6 +28,7 @@ with open(txtfile, 'r') as fid:
 t2 = time.perf_counter()
 
 print(f'Found {n_known} known and {n_unknown} unknown words')
-print(f'Construct: {t1-t0:.3f}')
-print(f'Scan: {t2-t1:.3f}')
-print(f'Total: {t2-t0:.3f}')
+
+print(f'Construct: {1000*(t1-t0):.3f} ms')
+print(f'Scan: {1000*(t2-t1):.3f} ms')
+print(f'Total: {1000*(t2-t0):.3f} ms')
