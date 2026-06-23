@@ -8,7 +8,9 @@ Summary:
 - Grows dynamically, doubles when 50% of the capacity is reached.
 - Performance in the expected range (see below).
 - Keys are either owned by the dictionary or handled externally.
-- Optional to store the hash values or calculate them on the fly when needed (define `DDICT_DROP_HASH`).
+- If `DDICT_DROP_HASH` is defined, the entries will exclude the hash
+  values and calculate them on the fly. This will reduce the memory
+  load but cause redundant calculations.
 - Can be built with clang/gcc/musl-gcc, C99 standard or above.
 
 ## Usage
