@@ -37,15 +37,14 @@ $ mv 75742.txt.utf-8 text.txt
 ```
 </details>
 
-| method        | t_construct [ms] | t_scan [ms] |
-|---------------|------------------|-------------|
-| ddict-managed | 17.6             | 1.4         |
-| ddict-xternal | 9.4              | 1.3         |
-| ddict-m-drop  | 20.0             | 1.6         |
-| ddict-x-drop  | 11.8             | 1.5         |
-| Python-3.12.3 | 35.5             | 6.0         |
-| Go-1.26.4     | 28.2             | 1.8         |
-
+| method              | t_construct [ms] | t_scan [ms] |
+|---------------------|------------------|-------------|
+| ddict-external      | 9.4              | 1.3         |
+| ddict-external-drop | 11.8             | 1.5         |
+| ddict-managed       | 17.6             | 1.4         |
+| ddict-managed-drop  | 20.0             | 1.6         |
+| Go-1.26.4           | 28.2             | 1.8         |
+| Python-3.12.3       | 35.5             | 6.0         |
 
 ```
 
