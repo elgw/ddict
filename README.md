@@ -4,7 +4,7 @@ An throwaway implementation of a dict data structure inspired by the approach ta
 
 Summary:
 - Entries `(char * key, u64 hash, void * value)` are stored in insertion order.
-- Linear probing.
+- Open Addressing with linear probing.
 - Grows dynamically, doubles when 50% of the capacity is reached.
 - Performance in the expected range (see below).
 - Keys are either owned by the dictionary or handled externally.
