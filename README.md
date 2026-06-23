@@ -2,18 +2,41 @@
 
 An throwaway implementation of a dict data structure inspired by the approach taken by [Python](https://github.com/python/cpython/blob/main/Objects/dictobject.c) which is described in this [blog post](https://morepypy.blogspot.com/2015/01/faster-more-memory-efficient-and-more.html).
 
+Summary:
+- Entries `(char * key, u64 hash, void * value)` are stored in insertion order.
+- Linear probing.
+- Grows dynamically, doubles when 50% of the capacity is reached.
 - Performance in the expected range (see below).
-- All keys are either owned by the dictionary or handled externally.
+- Keys are either owned by the dictionary or handled externally.
 - Optional to store the hash values or calculate them on the fly when needed (define `DDICT_DROP_HASH`).
 - Can be built with clang/gcc/musl-gcc, C99 standard or above.
 
+## Usage
+
+You just need `ddict.h` and `ddict.c`. For examples, see `ddict_test.c`.
+
 ## Timings
+
 A file with one word per line is used to construct a dictionary, then
 each word in another text file is scanned against the dictionary. By
 default the test programs assumes that these are called
 `dictwords.txt` and `text.txt`.
 
-<details><summary>Get the input files used for the test below</summary>
+Please note that the timings might be dominated by other factors
+besides the actual dict implementation, e.g. file parsing,
+encapsulation, garbage collection etc.
+
+| method              | t_construct [ms] | t_scan [ms] |
+|---------------------|------------------|-------------|
+| ddict-external      | 9.4              | 1.3         |
+| ddict-external-drop | 11.8             | 1.5         |
+| ddict-managed       | 17.6             | 1.4         |
+| ddict-managed-drop  | 20.0             | 1.6         |
+| Go-1.26.4           | 28.2             | 1.8         |
+| Python-3.12.3       | 35.5             | 6.0         |
+
+
+<details><summary>Get the input files used for the timings</summary>
 
 - `dictwords.txt`
 
@@ -37,24 +60,10 @@ $ mv 75742.txt.utf-8 text.txt
 ```
 </details>
 
-| method              | t_construct [ms] | t_scan [ms] |
-|---------------------|------------------|-------------|
-| ddict-external      | 9.4              | 1.3         |
-| ddict-external-drop | 11.8             | 1.5         |
-| ddict-managed       | 17.6             | 1.4         |
-| ddict-managed-drop  | 20.0             | 1.6         |
-| Go-1.26.4           | 28.2             | 1.8         |
-| Python-3.12.3       | 35.5             | 6.0         |
-
-
-
 
 <details>
-<summary>Command line output from the benchmarks</summary>
+<summary>Command line output from the timings</summary>
 
-Please note that the timings might be dominated by other factors
-besides the actual dict implementation, e.g. file parsing,
-encapsulation, garbage collection etc.
 
 ```
 -> Managed keys
