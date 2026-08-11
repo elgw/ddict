@@ -256,3 +256,20 @@ ddict_add(ddict * dict,
     dict->n_entries++;
     return 0;
 }
+
+int
+ddict_size(const ddict * dict)
+{
+    return dict->n_entries;
+}
+
+int ddict_update(ddict * dict, const char * key, void * value)
+{
+    entry * e;
+    if( (e = ddict_get(dict, key)) == NULL)
+    {
+        return 1;
+    }
+    e->value = value;
+    return 0;
+}

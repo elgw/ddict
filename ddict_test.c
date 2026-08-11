@@ -77,6 +77,53 @@ get_peak_memory_KB(size_t * _VmPeak, size_t * _VmHWM)
     return 0;
 }
 
+void example1(void)
+{
+    printf("#\n# Example 1\n#\n");
+    ddict * dict = ddict_new(1);
+    printf("dict_add['username'] = 'john_doe'\n");
+    ddict_add(dict, "username", "john_doe");
+    printf("dict_add['password'] = '1234'\n");
+    ddict_add(dict, "password", "1234");
+    printf("dict_add['password'] = '4567'\n");
+    if(ddict_add(dict, "password", "4567"))
+    {
+        printf("Can not ADD 'password', already set\n");
+        printf("dict_update['password'] = '4567'\n");
+        ddict_update(dict, "password", "4567");
+    }
+
+    entry * ans;
+    if((ans = ddict_get(dict, "username"))) {
+        printf("dict_get['username'] -> '%s'\n", (char*) ans->value);
+    }
+    if((ans = ddict_get(dict, "password"))) {
+        printf("dict_get['password'] -> '%s'\n", (char*) ans->value);
+    }
+    if((ans = ddict_get(dict, "height")) == NULL) {
+        printf("dict_get['height'] -> ERROR: 'height' is not in the dictionary\n");
+    }
+    ddict_free(dict);
+    return;
+}
+
+void example2(void)
+{
+    printf("#\n# Example 2\n#\n");
+    ddict * dict = ddict_new(1);
+    ddict_add(dict, "username", "john_doe");
+    ddict_add(dict, "password", "1234");
+    for(int kk = 0; kk < ddict_size(dict); kk++)
+    {
+        entry * ent = &dict->entries[kk];
+        printf("Entry %d/%d key: '%s', value: '%s'\n", kk+1, ddict_size(dict),
+               (char*) ent->key,
+               (char*) ent->value);
+    }
+    ddict_free(dict);
+    return;
+}
+
 
 typedef int64_t i64;
 
@@ -256,7 +303,8 @@ char * read_and_split(const char * file, size_t * _file_size)
     return buf;
 }
 
-int test_dict_keys(const char * dictfile, const char * txtfile, int manage_keys)
+int
+test_dict_keys(const char * dictfile, const char * txtfile, int manage_keys)
 {
     ddict * dict = NULL;
     char * key_buffer = NULL;
@@ -330,6 +378,12 @@ int main(int argc, char ** argv)
     }
     if(argc > 3) {
         txtfile = argv[3];
+    }
+
+    if(method == 0)
+    {
+        example1();
+        example2();
     }
 
     if(method == 1) {

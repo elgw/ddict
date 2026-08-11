@@ -37,7 +37,7 @@ typedef struct {
 #endif
     char * key;
     void * value;
-} entry;
+} entry; // TODO rename to ddict_entry
 
 
 
@@ -77,6 +77,14 @@ entry * ddict_get(const ddict *, const char * key);
 int
 ddict_add(ddict * dict,
           char * key, void * value);
+
+// Return the number of entries in the dictionary
+int
+ddict_size(const ddict * dict);
+
+// Update an existing key to point to a new value
+int
+ddict_update(ddict * dict, const char * key, void * value);
 
 #ifdef __cplusplus
 }
