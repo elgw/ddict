@@ -8,6 +8,8 @@
 
 #include "ddict.h"
 
+
+
 static double
 timespec_diff(struct timespec* end, struct timespec * start)
 {

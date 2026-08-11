@@ -11,7 +11,7 @@ Summary:
 - If `DDICT_DROP_HASH` is defined, the entries will exclude the hash
 values and calculate them on the fly. This will reduce the memory
 load but cause redundant calculations.
-- Can be built with clang/gcc/musl-gcc, C99 standard or above.
+- Can be built with clang/gcc/musl-gcc, gnu99 standard or above.
 
 ## Usage
 
