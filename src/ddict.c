@@ -13,6 +13,8 @@ typedef uint64_t u64;
 // Enable to see some timings
 // #define  DDICT_TIMINGS
 
+#define DDICT_INITIAL_SIZE 8
+
 #ifdef DDICT_TIMINGS
 static double timespec_diff(struct timespec* end, struct timespec * start)
 {
@@ -52,7 +54,7 @@ ddict_new(int manage_keys) {
         return NULL;
     }
     dict->manage_keys = manage_keys;
-    dict->n_indices = 8;
+    dict->n_indices = DDICT_INITIAL_SIZE*2;
     dict->indices = malloc(dict->n_indices*sizeof(i32));
     if(dict->indices == NULL) {
         free(dict);
@@ -62,7 +64,7 @@ ddict_new(int manage_keys) {
     {
         dict->indices[kk] = -1;
     }
-    dict->n_entries_alloc = 4;
+    dict->n_entries_alloc = DDICT_INITIAL_SIZE;
     dict->entries = malloc(dict->n_entries_alloc*sizeof(entry));
     if(dict->entries == NULL)
     {
@@ -140,7 +142,10 @@ ddict_grow_entries(ddict * dict)
     dict->n_entries_alloc = 1.5 * dict->n_entries_alloc;
     dict->entries = realloc(dict->entries,
                             dict->n_entries_alloc*sizeof(entry));
-    assert(dict->entries != NULL);
+    if(dict->entries == NULL)
+    {
+        exit(EXIT_FAILURE);
+    }
     return;
 }
 
@@ -158,6 +163,9 @@ ddict_grow_indices(ddict * dict)
     u64 n_indices2 = n_indices*2;
     //printf("indices %d -> %d\n", n_indices, n_indices2);
     i32 * indices2 = malloc(n_indices2*sizeof(i32));
+    if(indices2 == NULL) {
+        exit(EXIT_FAILURE);
+    }
     for(u64 kk = 0; kk < n_indices2; kk++) {
         indices2[kk] = -1;
     }

@@ -34,3 +34,7 @@ if __name__ == '__main__':
     dictfile = "dictwords.txt"
     txtfile = "text.txt"
     test_dict(dictfile, txtfile)
+    with open('/proc/self/status') as fid:
+        for line in fid:
+            if 'VmHWM' in line:
+                print(line)

@@ -8,7 +8,8 @@
 
 #include "ddict.h"
 
-static double timespec_diff(struct timespec* end, struct timespec * start)
+static double
+timespec_diff(struct timespec* end, struct timespec * start)
 {
     double elapsed = (end->tv_sec - start->tv_sec);
     elapsed += (end->tv_nsec - start->tv_nsec) / 1000000000.0;
@@ -18,61 +19,61 @@ static double timespec_diff(struct timespec* end, struct timespec * start)
 static int
 get_peak_memory_KB(size_t * _VmPeak, size_t * _VmHWM)
 {
-    FILE * sf = fopen("/proc/self/status", "r");
-    if(sf == NULL)
-    {
-        fprintf(stderr, "Failed to open /proc/self/status\n");
-        return 1;
-    }
     *_VmPeak = 0;
     *_VmHWM = 0;
 
-    char * VmPeak = NULL;
-    char * VmHWM = NULL;
+    const char fname[] = "/proc/self/status";
+    FILE * sf = fopen(fname, "r");
+    if(sf == NULL) {
+        fprintf(stderr, "Failed to open %s\n", fname);
+        return 1;
+    }
+
+    const size_t buffsize = 1024;
+    char * VmPeak = malloc(buffsize);
+    if(VmPeak == NULL) {
+        fclose(sf);
+        return 1;
+    }
+    char * VmHWM = malloc(buffsize);
+    if(VmHWM == NULL) {
+        fclose(sf);
+        free(VmPeak);
+        return 1;
+    }
 
     char * line = NULL;
     size_t len = 0;
 
-    while( getline(&line, &len, sf) > 0)
-    {
-        if(strlen(line) > 6)
-        {
-            if(strncmp(line, "VmPeak", 6) == 0)
-            {
-                free(VmPeak);
-                VmPeak = strdup(line);
-            }
-            if(strncmp(line, "VmHWM", 5) == 0)
-            {
-                free(VmHWM);
-                VmHWM = strdup(line);
+    while( getline(&line, &len, sf) > 0) {
+        if(strlen(line) > 6) {
+            if(strncmp(line, "VmPeak", 6) == 0) {
+                snprintf(VmPeak, buffsize, "%s", line);
+            } else {
+                if(strncmp(line, "VmHWM", 5) == 0) {
+                    snprintf(VmHWM, buffsize, "%s", line);
+                }
             }
         }
     }
     free(line);
     fclose(sf);
 
-    if((VmPeak != NULL) && (strlen(VmPeak) > 11))
-    {
+    // Assumes that the lines end with the 4 bytes ' kb \n'
+    if(strlen(VmPeak) > 5) {
         VmPeak[strlen(VmPeak) - 4] = '\0';
-
-        //    printf("peakline: '%s'\n", peakline+7);
         *_VmPeak = (size_t) atol(VmPeak+7);
     }
-    free(VmPeak);
 
-    if((VmHWM != NULL) && (strlen(VmHWM) > 10))
-    {
+    if(strlen(VmHWM) > 5) {
         VmHWM[strlen(VmHWM) - 4] = '\0';
-
-        //    printf("peakline: '%s'\n", peakline+7);
         *_VmHWM = (size_t) atol(VmHWM+7);
     }
-    free(VmHWM);
 
+    free(VmHWM);
+    free(VmPeak);
     return 0;
 }
-
 
 
 typedef int64_t i64;
@@ -86,6 +87,9 @@ typedef struct {
 wreader * word_reader_new(const char * fname)
 {
     wreader * reader = calloc(1, sizeof(wreader));
+    if(reader == NULL) {
+        return NULL;
+    }
     reader->fid = fopen(fname, "r");
     if(reader->fid == NULL)
     {
@@ -95,6 +99,9 @@ wreader * word_reader_new(const char * fname)
     }
     reader->buf_size = 1024;
     reader->word = malloc(reader->buf_size);
+    if(reader->word == NULL) {
+        exit(EXIT_FAILURE);
+    }
     return reader;
 }
 
@@ -223,13 +230,18 @@ ddict * dict_from_buffer(const char * buffer, size_t buffer_len)
 char * read_and_split(const char * file, size_t * _file_size)
 {
     FILE * fid = fopen(file, "r");
+    if(fid == NULL) {
+        return NULL;
+    }
     fseek(fid, 0, SEEK_END);
     size_t file_size = ftell(fid);
     fseek(fid, 0, SEEK_SET);
     char * buf = malloc(file_size+1);
     assert(buf != NULL);
     ssize_t nread = fread(buf, 1, file_size, fid);
-    assert(nread == (ssize_t) file_size);
+    if(nread != (ssize_t) file_size){
+        exit(EXIT_FAILURE);
+    }
     fclose(fid);
     *_file_size = file_size;
     // Replace blacks by '\0'
@@ -256,6 +268,9 @@ int test_dict_keys(const char * dictfile, const char * txtfile, int manage_keys)
         clock_gettime(CLOCK_REALTIME, &t0);
         size_t key_buffer_size;
         key_buffer = read_and_split(dictfile, &key_buffer_size);
+        if(key_buffer == NULL) {
+            exit(EXIT_FAILURE);
+        }
         dict = dict_from_buffer(key_buffer, key_buffer_size);
         clock_gettime(CLOCK_REALTIME, &t1);
     }
@@ -263,6 +278,10 @@ int test_dict_keys(const char * dictfile, const char * txtfile, int manage_keys)
     // 2. Find all words not in the dict from
     // the txtfile
     wreader * reader = word_reader_new(txtfile);
+    if(reader == NULL)
+    {
+        exit(EXIT_FAILURE);
+    }
     printf("Looking for unknown words in %s\n", txtfile);
     int n_known = 0;
     int n_unknown = 0;
@@ -299,26 +318,35 @@ int main(int argc, char ** argv)
     const char* dictfile  = "dictwords.txt";
     const char* txtfile = "text.txt";
 
+    int method = 1;
     if(argc > 1) {
-        dictfile = argv[1];
+        method = atoi(argv[1]);
     }
+
     if(argc > 2) {
-        txtfile = argv[2];
+        dictfile = argv[2];
+    }
+    if(argc > 3) {
+        txtfile = argv[3];
     }
 
+    if(method == 1) {
 #ifdef DDICT_DROP_HASH
-    printf("-> Managed keys & DDICT_DROP_HASH\n");
+        printf("-> Managed keys & DDICT_DROP_HASH\n");
 #else
-    printf("-> Managed keys\n");
+        printf("-> Managed keys, hash values cached\n");
 #endif
-    test_dict_keys(dictfile, txtfile, 1);
-#ifdef DDICT_DROP_HASH
-    printf("\n-> External keys & DDICT_DROP_HASH\n");
-#else
-    printf("\n-> External keys\n");
-#endif
-    test_dict_keys(dictfile, txtfile, 0);
+        test_dict_keys(dictfile, txtfile, 1);
+    }
 
+    if(method == 2){
+#ifdef DDICT_DROP_HASH
+        printf("-> External keys & DDICT_DROP_HASH\n");
+#else
+        printf("-> External keys, hash values cached\n");
+#endif
+        test_dict_keys(dictfile, txtfile, 0);
+    }
 
     size_t VmPeak, VmHWM;
     if(get_peak_memory_KB(&VmPeak, &VmHWM) == 0){

@@ -9,33 +9,34 @@ Summary:
 - Performance in the expected range (see below).
 - Keys are either owned by the dictionary or handled externally.
 - If `DDICT_DROP_HASH` is defined, the entries will exclude the hash
-  values and calculate them on the fly. This will reduce the memory
-  load but cause redundant calculations.
+values and calculate them on the fly. This will reduce the memory
+load but cause redundant calculations.
 - Can be built with clang/gcc/musl-gcc, C99 standard or above.
 
 ## Usage
 
 You just need `ddict.h` and `ddict.c`. For examples, see `ddict_test.c`.
 
-## Timings
+## Performance indicators (sanity check)
 
 A file with one word per line is used to construct a dictionary, then
 each word in another text file is scanned against the dictionary. By
 default the test programs assumes that these are called
 `dictwords.txt` and `text.txt`.
 
-Please note that the timings might be dominated by other factors
+The timings might be dominated by other factors
 besides the actual dict implementation, e.g. file parsing,
 encapsulation, garbage collection etc.
 
-| method              | t_construct [ms] | t_scan [ms] |
-|---------------------|------------------|-------------|
-| ddict-external      | 9.4              | 1.3         |
-| ddict-external-drop | 11.8             | 1.5         |
-| ddict-managed       | 17.6             | 1.4         |
-| ddict-managed-drop  | 20.0             | 1.6         |
-| Go-1.26.4           | 28.2             | 1.8         |
-| Python-3.12.3       | 35.5             | 6.0         |
+| method                 | t_construct [ms] | t_scan [ms] | t_total [ms] | VmHWM [kb] |
+|------------------------|------------------|-------------|--------------|------------|
+| ddict:external,cached  | 11.1             | 1.3         | 12.4         | 6884       |
+| ddict:external,dropped | 14.6             | 1.5         | 16.1         | 6928       |
+| ddict:managed,cached   | 15.7             | 1.3         | 17.0         | 9240       |
+| ddict:managed,dropped  | 23.2             | 1.5         | 24.6         | 9240       |
+| Go-1.26.4              | 28.2             | 1.8         | 30           | 14948      |
+| Python-3.12.3          | 33.4             | 5.7         | 39.1         | 23088      |
+|                        |                  |             |              |            |
 
 
 <details><summary>Get the input files used for the timings</summary>
@@ -64,43 +65,20 @@ $ mv 75742.txt.utf-8 text.txt
 
 
 <details>
-<summary>Command line output from the timings</summary>
+<summary>Example command line output</summary>
 
 
 ```
--> Managed keys
-Reading lines from ord.txt
+$ make
+$ ./ddict_test 2
+-> External keys, hash values cached
 Added 122475 words to the dictionary
-Looking for unknown words in pg75742.txt
+Looking for unknown words in text.txt
 Found 9070 known and 9280 unknown words
-Construct: 17.549 ms
-Scan: 1.352 ms
-Total: 18.902 ms
-
--> External keys
-Added 122475 words to the dictionary
-Looking for unknown words in pg75742.txt
-Found 9070 known and 9280 unknown words
-Construct: 9.539 ms
-Scan: 1.305 ms
-Total: 10.844 ms
-
--> Managed keys & DDICT_DROP_HASH
-Reading lines from ord.txt
-Added 122475 words to the dictionary
-Looking for unknown words in pg75742.txt
-Found 9070 known and 9280 unknown words
-Construct: 19.926 ms
-Scan: 1.607 ms
-Total: 21.533 ms
-
--> External keys & DDICT_DROP_HASH
-Added 122475 words to the dictionary
-Looking for unknown words in pg75742.txt
-Found 9070 known and 9280 unknown words
-Construct: 11.751 ms
-Scan: 1.465 ms
-Total: 13.215 ms
+Construct: 12.529 ms
+Scan: 1.439 ms
+Total: 13.967 ms
+VmPeak: 8372 kb, VmHWM: 6924 kb
 ```
 
 Python 3.12.3
@@ -126,10 +104,11 @@ Scanning took 1.806676ms
 n_words  18350
 Known:  9070  unknown:  9280
 Total time: 30.041463ms
+VmHWM:	   14948 kB
 ```
 </details>
 
-## TODO
+## TODO?
 
 - [ ] Unit tests
 - [ ] update by key

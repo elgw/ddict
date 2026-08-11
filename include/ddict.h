@@ -15,16 +15,20 @@ extern "C" {
 // - Using Open Addressing with Linear Probing
 //
 // - Can either own all the keys, i.e. makes copies of them and make
-// sure to free them at the end, or have the caller own the keys.
+//   sure to free them at the end, or have the caller own the
+//   keys. This is controlled by the argument to ddict_new()
 //
 // - Only string keys, will be scanned until a '\0' is found
 //
 // - If the hash value is cheap to compute, there is no need to save
-// them, disable hash storage by defining DDICT_DROP_HASH below.
+//   them, disable hash storage by defining DDICT_DROP_HASH below.
 //
 
-
+// If DDICT_DROP_HASH is defined, the hash values will not be
+// calculated when needed, i.e. not stored.
 // #define DDICT_DROP_HASH
+
+// Intended for collection of statistics
 // #define DDICT_STATS
 
 typedef struct {

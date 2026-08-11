@@ -71,4 +71,14 @@ func main() {
 	fmt.Println("n_words ", n_words)
 	fmt.Println("Known: ", n_known, " unknown: ", n_unknown)
 	fmt.Println("Total time:", t1 + t3)
+
+	f3, err := os.Open("/proc/self/status")
+	defer f3.Close()
+	scanner3 := bufio.NewScanner(f3)
+	for scanner3.Scan() {
+		var line = scanner3.Text()
+		if strings.Contains(line, "VmHWM") {
+			fmt.Println(line)
+		}
+	}
 }
