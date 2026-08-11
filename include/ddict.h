@@ -43,6 +43,7 @@ typedef struct {
 
 typedef struct {
     // Array of indices that points into the entries
+    // or has the value -1 if there is nothing to be found
     int32_t * indices;
     uint64_t n_indices;
     // Storage for (hash, key, value) triplets

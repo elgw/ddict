@@ -78,7 +78,9 @@ ddict_new(int manage_keys) {
 
 void
 ddict_free(ddict * dict) {
-    assert(dict != NULL);
+    if(dict == NULL) {
+        return;
+    }
     if(dict->manage_keys) {
         for(u64 kk = 0; kk < dict->n_entries; kk++) {
             free(dict->entries[kk].key);
@@ -87,6 +89,7 @@ ddict_free(ddict * dict) {
     free(dict->entries);
     free(dict->indices);
     free(dict);
+    return;
 }
 
 
@@ -95,10 +98,11 @@ ddict_get_with_hash(const ddict * dict,
                     const char * key, const u64 hash)
 {
     u64 idx = hash % dict->n_indices;
+    // Until found or an empty slot appears
     while(1)
     {
         if(idx == dict->n_indices) {
-            idx = 0;
+            idx = 0; // wrap around
         }
 
         i32 eid = dict->indices[idx]; // entry index
