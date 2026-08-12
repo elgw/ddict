@@ -7,6 +7,8 @@
 #include "ddict.h"
 
 typedef uint8_t u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
 typedef uint64_t u64;
 
 typedef int8_t i8;
@@ -75,7 +77,7 @@ _ddict_get_free_index(const ddict * dict, u64 idx) {
     switch(dict->index_type)
     {
     case I8:
-        while(dict->indices8[idx] != -1) {
+        while(dict->indices8[idx] != 0) {
             idx++;
             if(idx == dict->n_indices) {
                 idx = 0;
@@ -86,7 +88,7 @@ _ddict_get_free_index(const ddict * dict, u64 idx) {
         }
         break;
     case I16:
-        while(dict->indices16[idx] != -1) {
+        while(dict->indices16[idx] != 0) {
             idx++;
             if(idx == dict->n_indices) {
                 idx = 0;
@@ -97,7 +99,7 @@ _ddict_get_free_index(const ddict * dict, u64 idx) {
         }
         break;
     case I32:
-        while(dict->indices32[idx] != -1) {
+        while(dict->indices32[idx] != 0) {
             idx++;
             if(idx == dict->n_indices) {
                 idx = 0;
@@ -108,7 +110,7 @@ _ddict_get_free_index(const ddict * dict, u64 idx) {
         }
         break;
     case I64:
-        while(dict->indices64[idx] != -1) {
+        while(dict->indices64[idx] != 0) {
             idx++;
             if(idx == dict->n_indices) {
                 idx = 0;
@@ -125,6 +127,7 @@ _ddict_get_free_index(const ddict * dict, u64 idx) {
 static inline void
 _ddict_set_index(ddict * dict, i64 idx, i64 value)
 {
+    assert(value != 0);
     switch(dict->index_type) {
     case I8:
         dict->indices8[idx] = value;
@@ -143,66 +146,36 @@ _ddict_set_index(ddict * dict, i64 idx, i64 value)
 
 // Create the indices array, selecting the appropriate
 // element size depending on the number of indices
-static void
+static int
 _ddict_gen_indices(ddict * dict) {
     // select data type
     dict->index_type = I8;
-    if(dict->n_indices > 256-2){ dict->index_type = I16; }
-    if(dict->n_indices > 65025-2){ dict->index_type = I32; }
-    if(dict->n_indices > 4294967296-2){ dict->index_type = I64; }
-
-    // allocate array
-    switch(dict->index_type)
-    {
-    case I8:
-        dict->indices8 = malloc(dict->n_indices*sizeof(i8));
-        break;
-    case I16:
-        dict->indices16 = malloc(dict->n_indices*sizeof(i16));
-        break;
-    case I32:
-        dict->indices32 = malloc(dict->n_indices*sizeof(i32));
-        break;
-    case I64:
-        dict->indices64 = malloc(dict->n_indices*sizeof(i64));
-        break;
+    size_t esize = 1;
+    if(dict->n_indices > 256-2){
+        dict->index_type = I16;
+        esize = 2;
+    }
+    if(dict->n_indices > 65025-2){
+        dict->index_type = I32;
+        esize = 4;
+    }
+    if(dict->n_indices > 4294967296-2){
+        dict->index_type = I64;
+        esize = 8;
     }
 
+    dict->indices8 = calloc(dict->n_indices, esize);
     if(dict->indices8 == NULL) {
-        assert(0);
-        exit(EXIT_FAILURE);
+        return 1;
     }
 
-    // set to -1
-    switch(dict->index_type)
-    {
-    case I8:
-        for(u64 kk = 0; kk < dict->n_indices; kk++) {
-            dict->indices8[kk] = -1;
-        }
-        break;
-    case I16:
-        for(u64 kk = 0; kk < dict->n_indices; kk++) {
-            dict->indices16[kk] = -1;
-        }
-        break;
-    case I32:
-        for(u64 kk = 0; kk < dict->n_indices; kk++) {
-            dict->indices32[kk] = -1;
-        }
-        break;
-    case I64:
-        for(u64 kk = 0; kk < dict->n_indices; kk++) {
-            dict->indices64[kk] = -1;
-        }
-        break;
-    }
-    return;
+    return 0;
 }
 
-ddict * ddict_new_with_size(int manage_keys,
-                            u64 n_indices,
-                            int alloc_entries)
+static ddict *
+ddict_new_with_size(const int manage_keys,
+                    const u64 n_indices,
+                    const int alloc_entries)
 {
     if(n_indices < 8) {
         return NULL;
@@ -214,18 +187,25 @@ ddict * ddict_new_with_size(int manage_keys,
     }
     dict->manage_keys = manage_keys;
     dict->n_indices = n_indices;
-    _ddict_gen_indices(dict);
-    if(alloc_entries)
+    if(_ddict_gen_indices(dict))
     {
-        dict->n_entries_alloc = n_indices / 2;
-        dict->entries = malloc(dict->n_entries_alloc*sizeof(ddict_entry));
-        if(dict->entries == NULL)
-        {
-            free(dict->indices8); // no need to swith
-            free(dict);
-            return NULL;
-        }
+        free(dict);
+        return NULL;
     }
+
+    if(!alloc_entries) {
+        return dict;
+    }
+
+    dict->n_entries_alloc = n_indices / 2;
+    dict->entries = malloc((dict->n_entries_alloc+1)*sizeof(ddict_entry));
+    if(dict->entries == NULL)
+    {
+        free(dict->indices8); // no need to swith
+        free(dict);
+        return NULL;
+    }
+
     return dict;
 }
 
@@ -240,7 +220,7 @@ ddict_free(ddict * dict) {
         return;
     }
     if(dict->manage_keys) {
-        for(u64 kk = 0; kk < dict->n_entries; kk++) {
+        for(u64 kk = 1; kk <= dict->n_entries; kk++) {
             free(dict->entries[kk].key);
         }
     }
@@ -264,8 +244,8 @@ ddict_get_with_hash(const ddict * dict,
         }
 
         // i64 eid = dict->indices[idx]; // ddict_entry index
-        i64 eid = _ddict_entry_id_from_index(dict, idx);
-        if(eid == -1) {
+        u64 eid = _ddict_entry_id_from_index(dict, idx);
+        if(eid == 0) {
             return NULL;
         }
 
@@ -303,7 +283,7 @@ static void
 ddict_grow_entries(ddict * dict)
 {
     //printf("!!! Growing entries\n");
-    dict->n_entries_alloc = 1.5 * dict->n_entries_alloc;
+    dict->n_entries_alloc = 1.5 * dict->n_entries_alloc + 1;
     dict->entries = realloc(dict->entries,
                             dict->n_entries_alloc*sizeof(ddict_entry));
     if(dict->entries == NULL)
@@ -331,13 +311,13 @@ ddict_grow_indices(ddict * dict)
     u64 n_indices = dict->n_indices;
     u64 n_indices2 = n_indices*2;
     //    printf("Grow %lu -> %lu\n", n_indices, n_indices2);
-    free(dict->indices8);
+    free(dict->indices8); // TODO: Use realloc for the indices
     ddict * dict2 = ddict_new_with_size(dict->manage_keys, n_indices2, 0);
     assert(dict2 != NULL);
     dict2->entries = dict->entries;
     dict2->n_entries_alloc = dict->n_entries_alloc;
 
-    for(u64 kk = 0; kk < dict->n_entries; kk++)
+    for(u64 kk = 1; kk <= dict->n_entries; kk++)
     {
         ddict_entry e = dict->entries[kk];
 #ifdef DDICT_DROP_HASH
@@ -385,7 +365,7 @@ ddict_add(ddict * dict,
     }
 
     // Increase capacities if needed
-    if(dict->n_entries == dict->n_entries_alloc) {
+    if(dict->n_entries+1 == dict->n_entries_alloc) {
         ddict_grow_entries(dict);
     }
     if(2*dict->n_entries > dict->n_indices) {
@@ -394,20 +374,20 @@ ddict_add(ddict * dict,
 
     // Add at the end of the list of entries
 #ifndef DDICT_DROP_HASH
-    dict->entries[dict->n_entries].hash = hash;
+    dict->entries[dict->n_entries+1].hash = hash;
 #endif
     if(dict->manage_keys) {
-        dict->entries[dict->n_entries].key = ddict_strdup(word);
+        dict->entries[dict->n_entries+1].key = ddict_strdup(word);
     } else {
-        dict->entries[dict->n_entries].key = word;
+        dict->entries[dict->n_entries+1].key = word;
     }
 
-    dict->entries[dict->n_entries].value = value;
+    dict->entries[dict->n_entries+1].value = value;
 
     // Figure out where we can insert a reference
     u64 idx = hash % dict->n_indices;
     idx = _ddict_get_free_index(dict, idx);
-    _ddict_set_index(dict, idx, dict->n_entries);
+    _ddict_set_index(dict, idx, dict->n_entries+1);
     //printf("idx = %lu\n", idx);
     dict->n_entries++;
     return 0;

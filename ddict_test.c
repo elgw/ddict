@@ -247,8 +247,6 @@ ddict * dict_from_file(const char * dictfile)
         { line[strlen(line)-1] = '\0'; }
         if(ddict_add(dict, line, NULL) == 0) {
             n_dict++;
-        } else {
-            printf("%s already in dict\n", line);
         }
         assert(ddict_get(dict, line) != NULL);
     }
