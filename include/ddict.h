@@ -23,12 +23,17 @@ extern "C" {
 // - If the hash value is cheap to compute, there is no need to save
 //   them, disable hash storage by defining DDICT_DROP_HASH below.
 //
+// Version 1.0.0
+// Erik Wernersson, 2026-08-12
+
 
 // If DDICT_DROP_HASH is defined, the hash values will not be
 // calculated when needed, i.e. not stored.
 // #define DDICT_DROP_HASH
 
-// Intended for collection of statistics
+// Records the total number of steps the insertions happened
+// away from the ideal locations. Useful to check when switching
+// hash function
 // #define DDICT_STATS
 
 typedef struct {
@@ -39,39 +44,54 @@ typedef struct {
     void * value;
 } ddict_entry;
 
-// ddict->entries = [ 9387453, "john", "doe"], [36509, "homer", "simpson"], ... ]
-// ddict->indices = [ -1 , -1, 1, -1, 0, -1, -1, -1]
-//                             |      |
-//                             |      location of john
-//                            location of homer
+// Memory layout
+//
+//                      First entry is always empty
+//                      |
+// ddict->entries = [ [0,0,0], [ 9387453, "john", "doe"], [36509, "homer", "simpson"], ... ]
+// ddict->indices = [ 0 , 0, 2, 0, 1, 0, 0, 0]
+//                    |      |     |
+//                    |      |     location of john
+//                    |      location of homer
+//                    A zero means that the there is no entry associated
+//
+// The HASH value, h, points to a location in e=ddict->indices[h]
+// If e is 0, there is nothing stored with that hash value. If non-zero, check
+// ddict->entries[e], e_k=ddict->entries[ddict->indices[h+k]], etc until e_k is
+// is 0 or a match is found.
 
-    typedef enum {I8, I16, I32, I64} indices_bits;
+typedef enum {U8, U16, U32, U64} indices_bits;
 
 typedef struct {
     // Array of indices that points into the entries
-    // or has the value -1 if there is nothing to be found
-
+    // or has the value 0 if there is nothing to be found
     indices_bits index_type;
     union {
-        int8_t * indices8;
-        int16_t * indices16;
-        int32_t * indices32;
-        int64_t * indices64;
+        uint8_t * indices8;
+        uint16_t * indices16;
+        uint32_t * indices32;
+        uint64_t * indices64;
     };
-
+    // Size/number of elements of the index.
     uint64_t n_indices;
-    // Storage for (hash, key, value) triplets
+
+    // Storage for (hash, key, value) triplets. The first index is left unused.
     ddict_entry * entries;
     // Number of entries that are used
     uint64_t n_entries;
-    // Total number of entries
+    // Number of entries that can be used (the actual allocation is
+    // one more element).
     uint64_t n_entries_alloc;
-#ifdef DDICT_STATS
-    uint64_t n_collisions;
-#endif
-    // If the dict should allocate and store private copies
-    // of the keys
+
+    // If the dict allocate and store private copies
+    // of the keys. The values are never owned the dict.
     int manage_keys;
+
+#ifdef DDICT_STATS
+    // Count the number of collisions during ddict_add
+    uint64_t n_collision;
+#endif
+
 } ddict;
 
 // Create a new dictionary with the default size
@@ -85,7 +105,7 @@ void ddict_free(ddict * dict);
 ddict_entry * ddict_get(const ddict *, const char * key);
 
 // Add an ddict_entry to the dictionary unless it already contains
-// the given key.
+// the given key. See also ddict_update_entry.
 //
 // Returns 0 on success.
 int
@@ -93,7 +113,7 @@ ddict_add(ddict * dict,
           char * key, void * value);
 
 // Return the number of entries in the dictionary
-int
+uint64_t
 ddict_size(const ddict * dict);
 
 // Update an existing key to point to a new value

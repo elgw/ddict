@@ -63,13 +63,24 @@ encapsulation, garbage collection etc.
 
 | method                  | t_construct [ms] | t_scan [ms] | t_total [ms] | VmHWM [kb] |
 |-------------------------|------------------|-------------|--------------|------------|
-| ddict: external,cached  | 13.3             | 1.1         | 14.4         | 6767       |
-| ddict: managed, cached  | 19.5             | 1.1         | 20.6         | 9240       |
+| ddict: external,cached  | 12.9             | 1.2         | 12.9         | 6767       |
+| ddict: managed, cached  | 18.4             | 1.2         | 19.6         | 9240       |
 | ddict: external,dropped | 14.6             | 1.5         | 16.1         | 6868       |
 | ddict: managed, dropped | 20.4             | 1.2         | 21.6         | 9144       |
 | Go-1.26.4               | 28.2             | 1.8         | 30           | 14948      |
 | Python-3.12.3           | 33.4             | 5.7         | 39.1         | 23088      |
 |                         |                  |             |              |            |
+
+For a larger input (dictionary 370105 words, text 291792
+words). t_total reported as time for actual work/total process
+time. Memory reported as memory increase after initialization/total
+memory for the process.
+
+| method                 | t_construct [ms] | t_scan [ms] | t_total [ms] | VmHWM [kb]  |
+|------------------------|------------------|-------------|--------------|-------------|
+| ddict: external,cached | 42               | 23          | 65/69        | 18256       |
+| Python-3.12.3          | 104              | 72          | 173/199      | 42752/53288 |
+|                        |                  |             |              |             |
 
 
 <details><summary>Get the input files used for the timings</summary>

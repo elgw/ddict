@@ -8,8 +8,6 @@
 
 #include "ddict.h"
 
-
-
 static double
 timespec_diff(struct timespec* end, struct timespec * start)
 {
@@ -113,17 +111,16 @@ void example2(void)
     ddict * dict = ddict_new(1);
     ddict_add(dict, "username", "john_doe");
     ddict_add(dict, "password", "1234");
-    for(int kk = 0; kk < ddict_size(dict); kk++)
+    for(uint64_t kk = 0; kk < ddict_size(dict); kk++)
     {
         ddict_entry * ent = &dict->entries[kk];
-        printf("entry %d/%d key: '%s', value: '%s'\n", kk+1, ddict_size(dict),
+        printf("entry %lu/%lu key: '%s', value: '%s'\n", kk+1, ddict_size(dict),
                (char*) ent->key,
                (char*) ent->value);
     }
     ddict_free(dict);
     return;
 }
-
 
 typedef int64_t i64;
 
@@ -298,7 +295,7 @@ char * read_and_split(const char * file, size_t * _file_size)
     *_file_size = file_size;
     // Replace blacks by '\0'
     for(size_t kk = 0; kk < file_size; kk++) {
-        if(buf[kk] == '\n') {
+        if((buf[kk] == '\n') | (buf[kk] == '\r')) {
             buf[kk] = '\0';
         }
     }
@@ -307,7 +304,7 @@ char * read_and_split(const char * file, size_t * _file_size)
 }
 
 int
-test_dict_keys(const char * dictfile, const char * txtfile, int manage_keys)
+test_dict_keys(const char * dictfile, const char * txtfile, int manage_keys, int print_unknown)
 {
     ddict * dict = NULL;
     char * key_buffer = NULL;
@@ -339,6 +336,17 @@ test_dict_keys(const char * dictfile, const char * txtfile, int manage_keys)
     int n_known = 0;
     int n_unknown = 0;
     char * word;
+    if(print_unknown) {
+        while(word_reader_read(reader, &word))
+        {
+            if(ddict_get(dict, word) == NULL){
+                printf("%s\n", word);
+                n_unknown++;
+            } else {
+                n_known++;
+            }
+        }
+    } else {
     while(word_reader_read(reader, &word))
     {
         if(ddict_get(dict, word) == NULL){
@@ -346,6 +354,7 @@ test_dict_keys(const char * dictfile, const char * txtfile, int manage_keys)
         } else {
             n_known++;
         }
+    }
     }
     word_reader_free(reader);
     clock_gettime(CLOCK_REALTIME, &t2);
@@ -395,7 +404,7 @@ int main(int argc, char ** argv)
 #else
         printf("-> Managed keys, hash values cached\n");
 #endif
-        test_dict_keys(dictfile, txtfile, 1);
+        test_dict_keys(dictfile, txtfile, 1, 0);
     }
 
     if(method == 2){
@@ -404,7 +413,11 @@ int main(int argc, char ** argv)
 #else
         printf("-> External keys, hash values cached\n");
 #endif
-        test_dict_keys(dictfile, txtfile, 0);
+        test_dict_keys(dictfile, txtfile, 0, 0);
+    }
+
+    if(method == 4){ // Print out word not in the dictionary
+        test_dict_keys(dictfile, txtfile, 1, 1);
     }
 
     size_t VmPeak, VmHWM;

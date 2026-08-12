@@ -1,6 +1,7 @@
 #!/bin/env python
 
 import time
+import sys
 
 def test_dict(dictfile, txtfile):
     dict1 = dict()
@@ -24,15 +25,24 @@ def test_dict(dictfile, txtfile):
 
     t2 = time.perf_counter()
 
-    print(f'Found {n_known} known and {n_unknown} unknown words')
+    print(f'Scanned {n_known+n_unknown} found {n_known} known and {n_unknown}')
 
     print(f'Construct: {1000*(t1-t0):.3f} ms')
     print(f'Scan: {1000*(t2-t1):.3f} ms')
     print(f'Total: {1000*(t2-t0):.3f} ms')
 
 if __name__ == '__main__':
+
     dictfile = "dictwords.txt"
     txtfile = "text.txt"
+    if len(sys.argv) > 1:
+        dictfile = sys.argv[1]
+    if len(sys.argv) > 2:
+        txtfile = sys.argv[2]
+    with open('/proc/self/status') as fid:
+        for line in fid:
+            if 'VmHWM' in line:
+                print(line)
     test_dict(dictfile, txtfile)
     with open('/proc/self/status') as fid:
         for line in fid:
