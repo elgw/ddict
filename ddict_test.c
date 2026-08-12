@@ -90,17 +90,17 @@ void example1(void)
     {
         printf("Can not ADD 'password', already set\n");
         printf("dict_update['password'] = '4567'\n");
-        ddict_update(dict, "password", "4567");
+        ddict_update_entry(dict, "password", "4567");
     }
 
-    entry * ans;
+    ddict_entry * ans;
     if((ans = ddict_get(dict, "username"))) {
         printf("dict_get['username'] -> '%s'\n", (char*) ans->value);
     }
     if((ans = ddict_get(dict, "password"))) {
         printf("dict_get['password'] -> '%s'\n", (char*) ans->value);
     }
-    if((ans = ddict_get(dict, "height")) == NULL) {
+    if((ddict_get(dict, "height")) == NULL) {
         printf("dict_get['height'] -> ERROR: 'height' is not in the dictionary\n");
     }
     ddict_free(dict);
@@ -115,8 +115,8 @@ void example2(void)
     ddict_add(dict, "password", "1234");
     for(int kk = 0; kk < ddict_size(dict); kk++)
     {
-        entry * ent = &dict->entries[kk];
-        printf("Entry %d/%d key: '%s', value: '%s'\n", kk+1, ddict_size(dict),
+        ddict_entry * ent = &dict->entries[kk];
+        printf("entry %d/%d key: '%s', value: '%s'\n", kk+1, ddict_size(dict),
                (char*) ent->key,
                (char*) ent->value);
     }
@@ -243,15 +243,19 @@ ddict * dict_from_file(const char * dictfile)
         exit(EXIT_FAILURE);
     }
     while(getline(&line, &line_len, fid) != -1) {
-        line[strlen(line)-1] = '\0';
+        while(is_whitespace(line[strlen(line)-1]))
+        { line[strlen(line)-1] = '\0'; }
         if(ddict_add(dict, line, NULL) == 0) {
             n_dict++;
+        } else {
+            printf("%s already in dict\n", line);
         }
+        assert(ddict_get(dict, line) != NULL);
     }
 
     free(line);
     fclose(fid);
-    printf("Added %d words to the dictionary\n", n_dict);
+    printf("Added %d words to the dictionary (dict_from_file)\n", n_dict);
     return dict;
 }
 
@@ -268,11 +272,12 @@ ddict * dict_from_buffer(const char * buffer, size_t buffer_len)
 
                 if(ddict_add(dict, (char*) &buffer[kk], NULL) == 0) {
                     n_dict++;
+                    assert(ddict_get(dict, (char*) &buffer[kk]) != NULL);
                 }
             }
         }
     }
-    printf("Added %d words to the dictionary\n", n_dict);
+    printf("Added %d words to the dictionary (dict_from_buffer)\n", n_dict);
     return dict;
 }
 
@@ -338,10 +343,10 @@ test_dict_keys(const char * dictfile, const char * txtfile, int manage_keys)
     char * word;
     while(word_reader_read(reader, &word))
     {
-        if(ddict_get(dict, word) != NULL){
-            n_known++;
-        } else {
+        if(ddict_get(dict, word) == NULL){
             n_unknown++;
+        } else {
+            n_known++;
         }
     }
     word_reader_free(reader);

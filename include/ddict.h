@@ -37,17 +37,31 @@ typedef struct {
 #endif
     char * key;
     void * value;
-} entry; // TODO rename to ddict_entry
+} ddict_entry;
 
+// ddict->entries = [ 9387453, "john", "doe"], [36509, "homer", "simpson"], ... ]
+// ddict->indices = [ -1 , -1, 1, -1, 0, -1, -1, -1]
+//                             |      |
+//                             |      location of john
+//                            location of homer
 
+    typedef enum {I8, I16, I32, I64} indices_bits;
 
 typedef struct {
     // Array of indices that points into the entries
     // or has the value -1 if there is nothing to be found
-    int32_t * indices;
+
+    indices_bits index_type;
+    union {
+        int8_t * indices8;
+        int16_t * indices16;
+        int32_t * indices32;
+        int64_t * indices64;
+    };
+
     uint64_t n_indices;
     // Storage for (hash, key, value) triplets
-    entry * entries;
+    ddict_entry * entries;
     // Number of entries that are used
     uint64_t n_entries;
     // Total number of entries
@@ -66,11 +80,11 @@ ddict * ddict_new(int manage_keys);
 // Free the dictionary and all the key copies that it holds
 void ddict_free(ddict * dict);
 
-// Return an entry with the given key or NULL if
+// Return an ddict_entry with the given key or NULL if
 // nothing is found
-entry * ddict_get(const ddict *, const char * key);
+ddict_entry * ddict_get(const ddict *, const char * key);
 
-// Add an entry to the dictionary unless it already contains
+// Add an ddict_entry to the dictionary unless it already contains
 // the given key.
 //
 // Returns 0 on success.
@@ -84,7 +98,7 @@ ddict_size(const ddict * dict);
 
 // Update an existing key to point to a new value
 int
-ddict_update(ddict * dict, const char * key, void * value);
+ddict_update_entry(ddict * dict, const char * key, void * value);
 
 #ifdef __cplusplus
 }

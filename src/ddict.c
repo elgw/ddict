@@ -7,8 +7,12 @@
 #include "ddict.h"
 
 typedef uint8_t u8;
-typedef int32_t i32;
 typedef uint64_t u64;
+
+typedef int8_t i8;
+typedef int16_t i16;
+typedef int32_t i32;
+typedef int64_t i64;
 
 // Enable to see some timings
 // #define  DDICT_TIMINGS
@@ -47,34 +51,188 @@ wordhash(const char * word)
     return h;
 }
 
-ddict *
-ddict_new(int manage_keys) {
+static inline i64
+_ddict_entry_id_from_index(const ddict * dict, u64 idx)
+{
+    switch(dict->index_type)
+    {
+    case I8:
+        return (i64) dict->indices8[idx];
+    case I16:
+        return (i64) dict->indices16[idx];
+    case I32:
+        return (i64) dict->indices32[idx];
+    case I64:
+        return (i64) dict->indices64[idx];
+    }
+    assert(0);
+    return -1;
+}
+
+static inline i64
+_ddict_get_free_index(const ddict * dict, u64 idx) {
+
+    switch(dict->index_type)
+    {
+    case I8:
+        while(dict->indices8[idx] != -1) {
+            idx++;
+            if(idx == dict->n_indices) {
+                idx = 0;
+            }
+#ifdef DDICT_STATS
+            dict->n_collisions++;
+#endif
+        }
+        break;
+    case I16:
+        while(dict->indices16[idx] != -1) {
+            idx++;
+            if(idx == dict->n_indices) {
+                idx = 0;
+            }
+#ifdef DDICT_STATS
+            dict->n_collisions++;
+#endif
+        }
+        break;
+    case I32:
+        while(dict->indices32[idx] != -1) {
+            idx++;
+            if(idx == dict->n_indices) {
+                idx = 0;
+            }
+#ifdef DDICT_STATS
+            dict->n_collisions++;
+#endif
+        }
+        break;
+    case I64:
+        while(dict->indices64[idx] != -1) {
+            idx++;
+            if(idx == dict->n_indices) {
+                idx = 0;
+            }
+#ifdef DDICT_STATS
+            dict->n_collisions++;
+#endif
+            break;
+        }
+    }
+    return idx;
+}
+
+static inline void
+_ddict_set_index(ddict * dict, i64 idx, i64 value)
+{
+    switch(dict->index_type) {
+    case I8:
+        dict->indices8[idx] = value;
+        return;
+    case I16:
+        dict->indices16[idx] = value;
+        return;
+    case I32:
+        dict->indices32[idx] = value;
+        return;
+    case I64:
+        dict->indices64[idx] = value;
+        return;
+    }
+}
+
+// Create the indices array, selecting the appropriate
+// element size depending on the number of indices
+static void
+_ddict_gen_indices(ddict * dict) {
+    // select data type
+    dict->index_type = I8;
+    if(dict->n_indices > 256-2){ dict->index_type = I16; }
+    if(dict->n_indices > 65025-2){ dict->index_type = I32; }
+    if(dict->n_indices > 4294967296-2){ dict->index_type = I64; }
+
+    // allocate array
+    switch(dict->index_type)
+    {
+    case I8:
+        dict->indices8 = malloc(dict->n_indices*sizeof(i8));
+        break;
+    case I16:
+        dict->indices16 = malloc(dict->n_indices*sizeof(i16));
+        break;
+    case I32:
+        dict->indices32 = malloc(dict->n_indices*sizeof(i32));
+        break;
+    case I64:
+        dict->indices64 = malloc(dict->n_indices*sizeof(i64));
+        break;
+    }
+
+    if(dict->indices8 == NULL) {
+        assert(0);
+        exit(EXIT_FAILURE);
+    }
+
+    // set to -1
+    switch(dict->index_type)
+    {
+    case I8:
+        for(u64 kk = 0; kk < dict->n_indices; kk++) {
+            dict->indices8[kk] = -1;
+        }
+        break;
+    case I16:
+        for(u64 kk = 0; kk < dict->n_indices; kk++) {
+            dict->indices16[kk] = -1;
+        }
+        break;
+    case I32:
+        for(u64 kk = 0; kk < dict->n_indices; kk++) {
+            dict->indices32[kk] = -1;
+        }
+        break;
+    case I64:
+        for(u64 kk = 0; kk < dict->n_indices; kk++) {
+            dict->indices64[kk] = -1;
+        }
+        break;
+    }
+    return;
+}
+
+ddict * ddict_new_with_size(int manage_keys,
+                            u64 n_indices,
+                            int alloc_entries)
+{
+    if(n_indices < 8) {
+        return NULL;
+    }
+
     ddict * dict = calloc(1, sizeof(ddict));
     if(dict == NULL) {
         return NULL;
     }
     dict->manage_keys = manage_keys;
-    dict->n_indices = DDICT_INITIAL_SIZE*2;
-    dict->indices = malloc(dict->n_indices*sizeof(i32));
-    if(dict->indices == NULL) {
-        free(dict);
-        return NULL;
-    }
-    for(u64 kk = 0; kk < dict->n_indices; kk++)
+    dict->n_indices = n_indices;
+    _ddict_gen_indices(dict);
+    if(alloc_entries)
     {
-        dict->indices[kk] = -1;
-    }
-    dict->n_entries_alloc = DDICT_INITIAL_SIZE;
-    dict->entries = malloc(dict->n_entries_alloc*sizeof(entry));
-    if(dict->entries == NULL)
-    {
-        free(dict->indices);
-        free(dict);
-        return NULL;
+        dict->n_entries_alloc = n_indices / 2;
+        dict->entries = malloc(dict->n_entries_alloc*sizeof(ddict_entry));
+        if(dict->entries == NULL)
+        {
+            free(dict->indices8); // no need to swith
+            free(dict);
+            return NULL;
+        }
     }
     return dict;
 }
 
+ddict *
+ddict_new(int manage_keys) {
+    return ddict_new_with_size(manage_keys, DDICT_INITIAL_SIZE, 1);
+}
 
 void
 ddict_free(ddict * dict) {
@@ -87,13 +245,13 @@ ddict_free(ddict * dict) {
         }
     }
     free(dict->entries);
-    free(dict->indices);
+    free(dict->indices8);
     free(dict);
     return;
 }
 
 
-static entry *
+static ddict_entry *
 ddict_get_with_hash(const ddict * dict,
                     const char * key, const u64 hash)
 {
@@ -105,7 +263,8 @@ ddict_get_with_hash(const ddict * dict,
             idx = 0; // wrap around
         }
 
-        i32 eid = dict->indices[idx]; // entry index
+        // i64 eid = dict->indices[idx]; // ddict_entry index
+        i64 eid = _ddict_entry_id_from_index(dict, idx);
         if(eid == -1) {
             return NULL;
         }
@@ -129,7 +288,7 @@ ddict_get_with_hash(const ddict * dict,
     return NULL;
 }
 
-entry *
+ddict_entry *
 ddict_get(const ddict * dict,
           const char * key)
 {
@@ -138,14 +297,15 @@ ddict_get(const ddict * dict,
 }
 
 
+// Make room for more entries, This can have a separate growth rate
+// compared to the index as it does not matter if it is almost full.
 static void
 ddict_grow_entries(ddict * dict)
 {
-    //printf("Entries allocation: %d -> %d\n", dict->n_entries_alloc,
-    //(int) (1.5 * dict->n_entries_alloc));
+    //printf("!!! Growing entries\n");
     dict->n_entries_alloc = 1.5 * dict->n_entries_alloc;
     dict->entries = realloc(dict->entries,
-                            dict->n_entries_alloc*sizeof(entry));
+                            dict->n_entries_alloc*sizeof(ddict_entry));
     if(dict->entries == NULL)
     {
         exit(EXIT_FAILURE);
@@ -157,6 +317,11 @@ ddict_grow_entries(ddict * dict)
 static void
 ddict_grow_indices(ddict * dict)
 {
+    //printf("!!! Growing indices (%lu)\n", dict->n_indices);
+    // Procedure
+    // - create a new dict (dict2) that shares the entries from the original dict
+    // - in dict2, index all entries present in the original dict
+    // - transfer the index in dict2 to the original dict
 
 #ifdef DDICT_TIMINGS
     struct timespec t0, t1;
@@ -165,46 +330,44 @@ ddict_grow_indices(ddict * dict)
     assert(dict->n_indices > 0);
     u64 n_indices = dict->n_indices;
     u64 n_indices2 = n_indices*2;
-    //printf("indices %d -> %d\n", n_indices, n_indices2);
-    i32 * indices2 = malloc(n_indices2*sizeof(i32));
-    if(indices2 == NULL) {
-        exit(EXIT_FAILURE);
-    }
-    for(u64 kk = 0; kk < n_indices2; kk++) {
-        indices2[kk] = -1;
-    }
-#ifdef DDICT_STATS
-    dict->n_collisions = 0;
-#endif
+    //    printf("Grow %lu -> %lu\n", n_indices, n_indices2);
+    free(dict->indices8);
+    ddict * dict2 = ddict_new_with_size(dict->manage_keys, n_indices2, 0);
+    assert(dict2 != NULL);
+    dict2->entries = dict->entries;
+    dict2->n_entries_alloc = dict->n_entries_alloc;
 
     for(u64 kk = 0; kk < dict->n_entries; kk++)
     {
-        entry e = dict->entries[kk];
+        ddict_entry e = dict->entries[kk];
 #ifdef DDICT_DROP_HASH
         u64 idx = wordhash(e.key) % n_indices2;
 #else
         u64 idx = e.hash % n_indices2;
 #endif
-        // Linear probing
-        while(indices2[idx] != -1) {
-            idx++;
-            if(idx == n_indices2) {
-                idx = 0;
-            }
-#ifdef DDICT_STATS
-            dict->n_collisions++;
-#endif
-        }
-        indices2[idx] = kk;
+        // Find a free index slot
+        idx = _ddict_get_free_index(dict2, idx);
+        // Make it point to the already present entry
+        _ddict_set_index(dict2, idx, kk);
     }
 
-    free(dict->indices);
-    dict->indices = indices2;
-    dict->n_indices = n_indices2;
+    // Note: No need to switch since all point to the same memory location
+    dict->indices64 = dict2->indices64;
+    dict->index_type = dict2->index_type;
+
+#ifdef DDICT_STATS
+    dict->n_collisions = dict2->n_collisions;
+#endif
+    dict->n_indices = dict2->n_indices;
+    // We steal the indices from dict2 and it never had an entry
+    // so we can just free the struct
+    free(dict2);
 #ifdef DDICT_TIMINGS
     clock_gettime(CLOCK_REALTIME, &t1);
     printf("grow indices took %f s\n", timespec_diff(&t1, &t0));
 #endif
+
+    return;
 }
 
 
@@ -243,16 +406,9 @@ ddict_add(ddict * dict,
 
     // Figure out where we can insert a reference
     u64 idx = hash % dict->n_indices;
-    while(dict->indices[idx] != -1) {
-        idx++;
-        if(idx == dict->n_indices) {
-            idx = 0;
-        }
-#ifdef DDICT_STATS
-        dict->n_collisions++;
-#endif
-    }
-    dict->indices[idx] = dict->n_entries;
+    idx = _ddict_get_free_index(dict, idx);
+    _ddict_set_index(dict, idx, dict->n_entries);
+    //printf("idx = %lu\n", idx);
     dict->n_entries++;
     return 0;
 }
@@ -263,9 +419,9 @@ ddict_size(const ddict * dict)
     return dict->n_entries;
 }
 
-int ddict_update(ddict * dict, const char * key, void * value)
+int ddict_update_entry(ddict * dict, const char * key, void * value)
 {
-    entry * e;
+    ddict_entry * e;
     if( (e = ddict_get(dict, key)) == NULL)
     {
         return 1;
