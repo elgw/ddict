@@ -56,7 +56,11 @@ VmPeak: 2708 kb, VmHWM: 1556 kb
 
 ## Performance indicators (sanity check)
 
-The simplest test look like this in Python:
+Comparing apples to oranges, really!
+
+<details><summary>Test details</summary>
+
+With Python:
 
 ``` Python
     dct = dict()
@@ -68,7 +72,7 @@ The simplest test look like this in Python:
         assert(dct[f'{n}'] == 0)
 ```
 
-With ddict, something like this:
+With ddict:
 
 ``` C
     ddict * dict = ddict_new(1);
@@ -82,6 +86,22 @@ With ddict, something like this:
         assert(ddict_get(dict, word));
 ```
 
+With go:
+
+``` go
+var m = make(map[string]int)
+
+	for i := 0; i < N; i++ {
+		m[strconv.Itoa(i)] = 0
+	}
+
+    for i := 0; i < N; i++ {
+		_, ok = m[strconv.Itoa(i)]
+		if ok == false { panic("panic!"); }
+	}
+```
+
+</details>
 
 Test results (Intel i7-6700K, GCC 13.3.0, Python 3.12.3, go 1.26.5)
 
