@@ -2,77 +2,38 @@ package main
 
 import (
 	"os"
-	"log"
-	"bufio"
 	"fmt"
 	"time"
 	"strings"
+	"strconv"
+	"bufio"
 )
 
 func main() {
-	f, err := os.Open("../../dictwords.txt")
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer f.Close()
-
-	scanner := bufio.NewScanner(f)
-
+	var N, _ = strconv.Atoi(os.Args[1])
 	t0 := time.Now()
-
-	// Create a dictionary
+	fmt.Println("N=", N)
 	var m = make(map[string]int)
 
-	// Add all words
-	for scanner.Scan() {
-		var line = scanner.Text()
-		m[line] = 1
+	for i := 0; i < N; i++ {
+		m[strconv.Itoa(i)] = 0
 	}
 	t1 := time.Since(t0)
-	fmt.Println("Construction took", t1)
-
-	fmt.Println(len(m), " words added to the dictionary")
-
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
-	}
-
-	f2, err := os.Open("../../text.txt")
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer f2.Close()
-
-	scanner2 := bufio.NewScanner(f2)
-
-	var n_known = 0
-	var n_unknown = 0
-	var n_words = 0
 	t2 := time.Now()
 
-	for scanner2.Scan() {
-		var line = scanner2.Text()
-		words := strings.Fields(line)
-		for _, word := range words{
-			n_words = n_words + 1
-			if m[word] == 1 {
-				n_known = n_known + 1
-			} else {
-				n_unknown = n_unknown + 1
-			}
-		}
+	var ok bool
+	for i := 0; i < N; i++ {
+		_, ok = m[strconv.Itoa(i)]
+		if ok == false { panic("something is broken"); }
 	}
+
 	t3 := time.Since(t2)
-	fmt.Println("Scanning took", t3)
-	fmt.Println("n_words ", n_words)
-	fmt.Println("Known: ", n_known, " unknown: ", n_unknown)
+
+	fmt.Println("t_create", t1)
+	fmt.Println("t_scan", t3)
 	fmt.Println("Total time:", t1 + t3)
 
-	f3, err := os.Open("/proc/self/status")
+	f3, _ := os.Open("/proc/self/status")
 	defer f3.Close()
 	scanner3 := bufio.NewScanner(f3)
 	for scanner3.Scan() {

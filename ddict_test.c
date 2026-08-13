@@ -380,7 +380,7 @@ void test_synthetic(u64 n)
 {
     printf("test_synthetic(%lu)\n", n);
     printf("Inserting '0', '1', ..., 'n-1'\n");
-    struct timespec t0, t1, t2;
+    struct timespec t0, t1, t2, t3;
 
     clock_gettime(CLOCK_REALTIME, &t0);
     ddict * dict = ddict_new(1);
@@ -397,7 +397,8 @@ void test_synthetic(u64 n)
     printf("Insert: %.3f ms (avg: %.3f ns)\n", 1000.0 * timespec_diff(&t1, &t0),
            1000000000.0 * timespec_diff(&t1, &t0) / (double) n);
 
-    printf("Assuring that '0', '1', ..., 'n-1' is in the dict\n");
+    printf("Assuring that '0', '1', ..., 'n-1' are in the dict\n");
+    clock_gettime(CLOCK_REALTIME, &t2);
     for(u64 kk = 0; kk < n; kk++)
     {
         if( ddict_get(dict, word) == NULL) {
@@ -405,11 +406,12 @@ void test_synthetic(u64 n)
             exit(EXIT_FAILURE);
         }
     }
-    clock_gettime(CLOCK_REALTIME, &t2);
+    clock_gettime(CLOCK_REALTIME, &t3);
 
-    printf("Scan: %.3f ms (avg: %.3f ns)\n", 1000.0 * timespec_diff(&t2, &t1),
-           1000000000.0 * timespec_diff(&t2, &t1) / (double) n);
-    printf("Total: %.3f ms\n", 1000.0 * timespec_diff(&t2, &t0));
+    printf("Scan: %.3f ms (avg: %.3f ns)\n", 1000.0 * timespec_diff(&t3, &t2),
+           1000000000.0 * timespec_diff(&t3, &t2) / (double) n);
+    printf("Total: %.3f ms\n",
+           1000.0 * (timespec_diff(&t1, &t0) + timespec_diff(&t3, &t2)));;
     ddict_free(dict);
 }
 
