@@ -62,7 +62,7 @@ The simplest test look like this in Python
         assert(dct[f'{n}'] == 0)
 ```
 
-And with ddict:
+And with ddict, something like this:
 
 ``` C
     ddict * dict = ddict_new(1);
@@ -78,120 +78,18 @@ And with ddict:
 ```
 
 
-That gave:
+That gave (Intel i7-6700K, GCC 13.3.0)
 
-| method | N   | t_create [ms] | t_scan [ms] | t_total | VmWHM [MB] |
-|--------|-----|---------------|-------------|---------|------------|
-| ddict  | 1e6 | 170           | 14          | 183     | 39         |
-| python | 1e6 | 267           | 232         | 500     | 87         |
-| ddict  | 1e7 | 1822          | 163         | 1985    | 442        |
-| python | 1e7 | 3562          | 2986        | 6548    | 720        |
-| ddict  | 1e8 | 19447         | 2419        | 21886   | 5093       |
-| python | 1e8 | 46690         | 20669       | 77359   | 11234      |
+| method | N   | t_create [ms] | t_scan [ms] | t_total [ms] | VmHWM [MB] |
+|--------|-----|--------------:|------------:|-------------:|-----------:|
+| ddict  | 1e6 |           170 |          14 |          183 |         39 |
+| python | 1e6 |           267 |         232 |          500 |         87 |
+| ddict  | 1e7 |          1822 |         163 |         1985 |        442 |
+| python | 1e7 |          3562 |        2986 |         6548 |        720 |
+| ddict  | 1e8 |         19447 |        2419 |        21886 |       5093 |
+| python | 1e8 |         46690 |       20669 |        77359 |      11234 |
 |        |     |
 
-
-A file with one word per line is used to construct a dictionary, then
-each word in another text file is scanned against the dictionary. By
-default the test programs assumes that these are called
-`dictwords.txt` and `text.txt`.
-
-The timings might be dominated by other factors
-besides the actual dict implementation, e.g. file parsing,
-encapsulation, garbage collection etc.
-
-| method                  | t_construct [ms] | t_scan [ms] | t_total [ms] | VmHWM [kb] |
-|-------------------------|------------------|-------------|--------------|------------|
-| ddict: external,cached  | 12.9             | 1.2         | 12.9         | 6767       |
-| ddict: managed, cached  | 18.4             | 1.2         | 19.6         | 9240       |
-| ddict: external,dropped | 14.6             | 1.5         | 16.1         | 6868       |
-| ddict: managed, dropped | 20.4             | 1.2         | 21.6         | 9144       |
-| Go-1.26.4               | 28.2             | 1.8         | 30           | 14948      |
-| Python-3.12.3           | 33.4             | 5.7         | 39.1         | 23088      |
-|                         |                  |             |              |            |
-
-For a larger input (dictionary 370105 words, text 291792
-words). t_total reported as time for actual work/total process
-time. Memory reported as memory increase after initialization/total
-memory for the process.
-
-| method                 | t_create [ms] | t_scan [ms] | t_total [ms] | VmHWM [kb]  |
-|------------------------|------------------|-------------|--------------|-------------|
-| ddict: external,cached | 42               | 23          | 65/69        | 18256       |
-| Python-3.12.3          | 104              | 72          | 173/199      | 42752/53288 |
-|                        |                  |             |              |             |
-
-
-
-
-<details><summary>Get the input files used for the timings</summary>
-
-- `dictwords.txt`
-
-```
-$ wget https://raw.githubusercontent.com/Torbacka/wordlist/refs/heads/master/saol2018clean.csv
-$ awk -F, '{print $2}' saol2018clean.csv > dictwords.txt
-$ wc dictwords.txt
- 124761  125031 1440709 dictwords.txt
-$ uniq dictwords.txt  | wc
- 122475
-```
-
-- `text.txt`
-
-
-```
-$ wget https://www.gutenberg.org/ebooks/75742.txt.utf-8
-$ wc 75742.txt.utf-8
-  2142  18350 124696 75742.txt.utf-8
-$ mv 75742.txt.utf-8 text.txt
-```
-</details>
-
-
-<details>
-<summary>Example command line output</summary>
-
-
-```
-$ make
-$ ./ddict_test 2
--> External keys, hash values cached
-Added 122475 words to the dictionary
-Looking for unknown words in text.txt
-Found 9070 known and 9280 unknown words
-Construct: 12.529 ms
-Scan: 1.439 ms
-Total: 13.967 ms
-VmPeak: 8372 kb, VmHWM: 6924 kb
-```
-
-Python 3.12.3
-
-```
-$ stress -c 8 -t 8 ; python test/pydict.py
-dded 122475 words to the dictionary
-Found 9070 known and 9280 unknown words
-Construct: 34.481 ms
-Scan: 5.959 ms
-Total: 40.440 ms
-```
-
-Go 1.26.4
-
-```
-$ cd test/go/
-$ go build
-$ stress -c 8 -t 8 ; ./dict
-Construction took 28.234787ms
-122475  words added to the dictionary
-Scanning took 1.806676ms
-n_words  18350
-Known:  9070  unknown:  9280
-Total time: 30.041463ms
-VmHWM:	   14948 kB
-```
-</details>
 
 ## Notes
 
