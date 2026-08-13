@@ -87,6 +87,10 @@ typedef struct {
     // of the keys. The values are never owned the dict.
     int manage_keys;
 
+    uint8_t * key_storage;
+    uint64_t key_storage_size;
+    uint64_t key_storage_pos; // where to write
+
 #ifdef DDICT_STATS
     // Count the number of collisions during ddict_add
     uint64_t n_collision;

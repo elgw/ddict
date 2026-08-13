@@ -82,6 +82,15 @@ memory for the process.
 | Python-3.12.3          | 104              | 72          | 173/199      | 42752/53288 |
 |                        |                  |             |              |             |
 
+```
+                                  #t_create, t_scan, t_total,   VmHWM
+./ddict_test 5 1000000            #    170/     14/      183    39 MB
+./ddict_test 5 10000000           #   1822/    163/     1985   442 MB
+./ddict_test 5 100000000          #  19447/   2419/    21886  5093 MB
+python test/pydict.py 1_000_000   #    267/    232/      500    87 MB
+python test/pydict.py 10_000_000  #   3562/   2986/     6548   720 MB
+python test/pydict.py 100_000_000 #  46690/  20669/    77359 11234 MB
+```
 
 <details><summary>Get the input files used for the timings</summary>
 

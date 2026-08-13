@@ -8,6 +8,8 @@
 
 #include "ddict.h"
 
+typedef uint64_t u64;
+
 static double
 timespec_diff(struct timespec* end, struct timespec * start)
 {
@@ -264,7 +266,6 @@ ddict * dict_from_buffer(const char * buffer, size_t buffer_len)
     for(size_t kk = 1; kk < buffer_len; kk++) {
         if(buffer[kk-1] == '\0'){
             if(buffer[kk] != '\0') {
-
                 if(ddict_add(dict, (char*) &buffer[kk], NULL) == 0) {
                     n_dict++;
                     assert(ddict_get(dict, (char*) &buffer[kk]) != NULL);
@@ -340,7 +341,7 @@ test_dict_keys(const char * dictfile, const char * txtfile, int manage_keys, int
         while(word_reader_read(reader, &word))
         {
             if(ddict_get(dict, word) == NULL){
-                printf("%s\n", word);
+                printf("Unknown: %s\n", word);
                 n_unknown++;
             } else {
                 n_known++;
@@ -373,6 +374,44 @@ test_dict_keys(const char * dictfile, const char * txtfile, int manage_keys, int
     printf("Scan: %.3f ms\n", 1000.0 * timespec_diff(&t2, &t1));
     printf("Total: %.3f ms\n", 1000.0 * timespec_diff(&t2, &t0));
     return 0;
+}
+
+void test_synthetic(u64 n)
+{
+    printf("test_synthetic(%lu)\n", n);
+    printf("Inserting '0', '1', ..., 'n-1'\n");
+    struct timespec t0, t1, t2;
+
+    clock_gettime(CLOCK_REALTIME, &t0);
+    ddict * dict = ddict_new(1);
+    char word[64];
+    for(u64 kk = 0; kk < n; kk++)
+    {
+        sprintf(word, "%lu", kk);
+        if(ddict_add(dict, word, 0)) {
+            printf("Failed to add '%s'\n", word);
+            exit(EXIT_FAILURE);
+        }
+    }
+    clock_gettime(CLOCK_REALTIME, &t1);
+    printf("Insert: %.3f ms (avg: %.3f ns)\n", 1000.0 * timespec_diff(&t1, &t0),
+           1000000000.0 * timespec_diff(&t1, &t0) / (double) n);
+
+    printf("Assuring that '0', '1', ..., 'n-1' is in the dict\n");
+    for(u64 kk = 0; kk < n; kk++)
+    {
+        ddict_entry * e;
+        if( (e= ddict_get(dict, word)) == NULL) {
+            printf("Failed to retrieve '%s'\n", word);
+            exit(EXIT_FAILURE);
+        }
+    }
+    clock_gettime(CLOCK_REALTIME, &t2);
+
+    printf("Scan: %.3f ms (avg: %.3f ns)\n", 1000.0 * timespec_diff(&t2, &t1),
+           1000000000.0 * timespec_diff(&t2, &t1) / (double) n);
+    printf("Total: %.3f ms\n", 1000.0 * timespec_diff(&t2, &t0));
+    ddict_free(dict);
 }
 
 int main(int argc, char ** argv)
@@ -417,7 +456,15 @@ int main(int argc, char ** argv)
     }
 
     if(method == 4){ // Print out word not in the dictionary
-        test_dict_keys(dictfile, txtfile, 1, 1);
+        test_dict_keys(dictfile, txtfile, 0, 1);
+    }
+
+    if(method == 5){
+        u64 n = 1000;
+        if(argc > 2) {
+            n = atol(argv[2]);
+        }
+        test_synthetic(n);
     }
 
     size_t VmPeak, VmHWM;

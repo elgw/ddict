@@ -2,7 +2,13 @@
 #include <stdint.h>
 #include <assert.h>
 #include <string.h>
+
+// Enable to see some timings
+#define  DDICT_TIMINGS
+
+#ifdef DDICT_TIMINGS
 #include <time.h>
+#endif
 
 #include "ddict.h"
 
@@ -16,10 +22,13 @@ typedef uint64_t u64;
 // The index will be at least this factor
 // larger than the number of inserted elements
 #define DDICT_INDEX_FACTOR 2
-#define DDICT_INDEX_GROWTH_RATE 2
+// To rebuild the index is quite expensive. A large grow rate
+// will in general be faster but require more memory.
+#define DDICT_INDEX_GROWTH_RATE 4
+// factor to grow entry storage with when full
 #define DDICT_ENTRIES_GROWTH_RATE 1.5
-// Enable to see some timings
-// #define  DDICT_TIMINGS
+
+
 
 #ifdef DDICT_TIMINGS
 static double
@@ -33,23 +42,56 @@ timespec_diff(struct timespec* end, struct timespec * start)
 
 
 static char *
-ddict_strdup(const char *str)
+ddict_store_key(ddict * dict, const char *str)
 {
-    size_t n = strlen(str) + 1;
-    char * cpy = malloc(n);
-    if(cpy == NULL) {
-        return NULL;
+    size_t nb = strlen(str) + 1;
+    if(nb + dict->key_storage_pos >= dict->key_storage_size)
+    {
+        // Realloc might change the address, and then all addresses need to be updated
+        dict->key_storage_size *= 2;
+        #ifdef DDICT_TIMINGS
+        struct timespec t0, t1;
+        clock_gettime(CLOCK_REALTIME, &t0);
+        #endif
+        u8 * new = realloc(dict->key_storage, dict->key_storage_size);
+        if(new != dict->key_storage) {
+            ssize_t delta = new - dict->key_storage;
+            for(u64 kk = 1; kk <= dict->n_entries; kk++)
+            {
+                dict->entries[kk].key += delta;
+            }
+            dict->key_storage = new;
+        }
+#ifdef DDICT_TIMINGS
+        clock_gettime(CLOCK_REALTIME, &t1);
+        printf("Increase key storage capacity took %f s\n", timespec_diff(&t1, &t0));
+#endif
     }
-    return memcpy(cpy, str, n);
+    memcpy(dict->key_storage + dict->key_storage_pos, str, nb);
+    char * retpos = (char*) (dict->key_storage + dict->key_storage_pos);
+    dict->key_storage_pos += nb;
+    #if 0
+    for(u64 kk = 0; kk < dict->key_storage_pos; kk++) {
+        char c = dict->key_storage[kk];
+        if(c == '\0') {
+            printf("|");
+        } else {
+            printf("%c", c);
+        }
+    }
+    printf("\n");
+    #endif
+    return retpos;
 }
 
 static u64
 _ddict_wordhash(const char * word)
 {
+    // your standard Polynomial rolling hash function
     u8 * bytes = (u8*) word;
     u64 h = 0;
     while(*bytes != '\0') {
-        h = h*37 + *bytes++; // 31 is also a good value
+        h = h*31 + *bytes++;
     }
     return h;
 }
@@ -179,6 +221,7 @@ ddict_new_with_size(const int manage_keys,
                     const u64 n_indices,
                     const int alloc_entries)
 {
+
     if(n_indices < 2) {
         return NULL;
     }
@@ -198,10 +241,21 @@ ddict_new_with_size(const int manage_keys,
         return dict;
     }
 
+    if(manage_keys)
+    {
+        dict->key_storage_size = 20*n_indices;
+        dict->key_storage = malloc(dict->key_storage_size);
+        if(dict->key_storage == NULL) {
+            free(dict);
+            return NULL;
+        }
+    }
+
     dict->n_entries_alloc = n_indices / 2;
     dict->entries = malloc((dict->n_entries_alloc+1)*sizeof(ddict_entry));
     if(dict->entries == NULL) {
         free(dict->indices8);
+        free(dict->key_storage);
         free(dict);
         return NULL;
     }
@@ -219,14 +273,13 @@ ddict_free(ddict * dict) {
     if(dict == NULL) {
         return;
     }
-    #ifdef DDICT_STATS
-    printf("ddict_free: %lu collisions recorded\n", dict->n_collision);
-    #endif
-    if(dict->manage_keys) {
-        for(u64 kk = 1; kk <= dict->n_entries; kk++) {
-            free(dict->entries[kk].key);
-        }
-    }
+#ifdef DDICT_STATS
+    printf("ddict_free (#DDICT_STATS defined)\n"
+           "            dict->n_collision = %lu\n"
+           "            dict->n_indices = %lu\n",
+           dict->n_collision, dict->n_indices);
+#endif
+    free(dict->key_storage);
     free(dict->entries);
     free(dict->indices8);
     free(dict);
@@ -378,12 +431,12 @@ ddict_add(ddict * dict,
         }
     }
 
-    // Add at the end of the list of entries
+    // Append the new entry to entries
 #ifndef DDICT_DROP_HASH
     dict->entries[dict->n_entries+1].hash = hash;
 #endif
     if(dict->manage_keys) {
-        dict->entries[dict->n_entries+1].key = ddict_strdup(word);
+        dict->entries[dict->n_entries+1].key = ddict_store_key(dict, word);
     } else {
         dict->entries[dict->n_entries+1].key = word;
     }

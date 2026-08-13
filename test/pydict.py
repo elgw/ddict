@@ -31,7 +31,37 @@ def test_dict(dictfile, txtfile):
     print(f'Scan: {1000*(t2-t1):.3f} ms')
     print(f'Total: {1000*(t2-t0):.3f} ms')
 
+def test_synthetic(N):
+    print(f'test_synthetic({N})')
+    print(f"Inserting '0', '1', .. 'N-1'")
+    t0 = time.perf_counter()
+    dct = dict()
+    for n in range(N):
+        dct[f'{n}'] = 0
+    t1 = time.perf_counter()
+    for n in range(N):
+        assert(dct[f'{n}'] == 0)
+    t2 = time.perf_counter()
+
+    print(f'Construct: {1000*(t1-t0):.3f} ms')
+    print(f'Scan: {1000*(t2-t1):.3f} ms')
+    print(f'Total: {1000*(t2-t0):.3f} ms')
+
+def printmem():
+    with open('/proc/self/status') as fid:
+        for line in fid:
+            if 'VmHWM' in line:
+                print(line)
+
+
 if __name__ == '__main__':
+
+    N = 100000
+    if(len(sys.argv) > 1):
+        N = int(sys.argv[1])
+    test_synthetic(N)
+    printmem()
+    sys.exit(0)
 
     dictfile = "dictwords.txt"
     txtfile = "text.txt"
@@ -44,7 +74,4 @@ if __name__ == '__main__':
             if 'VmHWM' in line:
                 print(line)
     test_dict(dictfile, txtfile)
-    with open('/proc/self/status') as fid:
-        for line in fid:
-            if 'VmHWM' in line:
-                print(line)
+    printmem()
