@@ -79,7 +79,7 @@ get_peak_memory_KB(size_t * _VmPeak, size_t * _VmHWM)
 
 void example1(void)
 {
-    printf("#\n# Example 1\n#\n");
+    printf("#\n# Example 1 -- basic usage\n#\n");
     ddict * dict = ddict_new(1);
     printf("dict_add['username'] = 'john_doe'\n");
     ddict_add(dict, "username", "john_doe");
@@ -109,7 +109,7 @@ void example1(void)
 
 void example2(void)
 {
-    printf("#\n# Example 2\n#\n");
+    printf("#\n# Example 2 -- looping over entries\n#\n");
     ddict * dict = ddict_new(1);
     ddict_add(dict, "username", "john_doe");
     ddict_add(dict, "password", "1234");

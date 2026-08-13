@@ -29,7 +29,7 @@ You just need `ddict.h` and `ddict.c`. For examples, see `ddict_test.c`.
 ```
 $ ./ddict_test 0
 #
-# Example 1
+# Example 1 -- basic usage
 #
 dict_add['username'] = 'john_doe'
 dict_add['password'] = '1234'
@@ -40,7 +40,7 @@ dict_get['username'] -> 'john_doe'
 dict_get['password'] -> '4567'
 dict_get['height'] -> ERROR: 'height' is not in the dictionary
 #
-# Example 2
+# Example 2 -- looping over entries
 #
 entry 1/2 key: 'username', value: 'john_doe'
 entry 2/2 key: 'password', value: '1234'
@@ -51,6 +51,45 @@ VmPeak: 2708 kb, VmHWM: 1556 kb
 </details>
 
 ## Performance indicators (sanity check)
+
+The simplest test look like this in Python
+
+``` Python
+    dct = dict()
+    for n in range(N):
+        dct[f'{n}'] = 0
+    for n in range(N):
+        assert(dct[f'{n}'] == 0)
+```
+
+And with ddict:
+
+``` C
+    ddict * dict = ddict_new(1);
+
+    for(u64 kk = 0; kk < n; kk++) {
+        sprintf(word, "%lu", kk);
+        ddict_add(dict, word, 0));
+    }
+
+    for(u64 kk = 0; kk < n; kk++) {
+        assert(ddict_get(dict, word));
+    }
+```
+
+
+That gave:
+
+| method | N   | t_create [ms] | t_scan [ms] | t_total | VmWHM [MB] |
+|--------|-----|---------------|-------------|---------|------------|
+| ddict  | 1e6 | 170           | 14          | 183     | 39         |
+| python | 1e6 | 267           | 232         | 500     | 87         |
+| ddict  | 1e7 | 1822          | 163         | 1985    | 442        |
+| python | 1e7 | 3562          | 2986        | 6548    | 720        |
+| ddict  | 1e8 | 19447         | 2419        | 21886   | 5093       |
+| python | 1e8 | 46690         | 20669       | 77359   | 11234      |
+|        |     |
+
 
 A file with one word per line is used to construct a dictionary, then
 each word in another text file is scanned against the dictionary. By
@@ -76,21 +115,14 @@ words). t_total reported as time for actual work/total process
 time. Memory reported as memory increase after initialization/total
 memory for the process.
 
-| method                 | t_construct [ms] | t_scan [ms] | t_total [ms] | VmHWM [kb]  |
+| method                 | t_create [ms] | t_scan [ms] | t_total [ms] | VmHWM [kb]  |
 |------------------------|------------------|-------------|--------------|-------------|
 | ddict: external,cached | 42               | 23          | 65/69        | 18256       |
 | Python-3.12.3          | 104              | 72          | 173/199      | 42752/53288 |
 |                        |                  |             |              |             |
 
-```
-                                  #t_create, t_scan, t_total,   VmHWM
-./ddict_test 5 1000000            #    170/     14/      183    39 MB
-./ddict_test 5 10000000           #   1822/    163/     1985   442 MB
-./ddict_test 5 100000000          #  19447/   2419/    21886  5093 MB
-python test/pydict.py 1_000_000   #    267/    232/      500    87 MB
-python test/pydict.py 10_000_000  #   3562/   2986/     6548   720 MB
-python test/pydict.py 100_000_000 #  46690/  20669/    77359 11234 MB
-```
+
+
 
 <details><summary>Get the input files used for the timings</summary>
 
@@ -161,8 +193,11 @@ VmHWM:	   14948 kB
 ```
 </details>
 
-## TODO?
+## Notes
 
-- [ ] Unit tests
-- [ ] update by key
-- [ ] serialize and de-serialize
+- It is costly to `realloc` the entries, and even more costly to
+  grow the index, since it has to be re-built each time that happens.
+
+- When the key storage is full, it is `realloc`'ed. That is not
+necessary since we could split up the keys and store them in multiple
+buffers.

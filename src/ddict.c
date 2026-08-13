@@ -4,7 +4,7 @@
 #include <string.h>
 
 // Enable to see some timings
-#define  DDICT_TIMINGS
+// #define  DDICT_TIMINGS
 
 #ifdef DDICT_TIMINGS
 #include <time.h>
@@ -17,6 +17,7 @@ typedef uint16_t u16;
 typedef uint32_t u32;
 typedef uint64_t u64;
 
+// Settings
 // The storage for entries will be half that size
 #define DDICT_INDEX_INITIAL_SIZE 8
 // The index will be at least this factor
@@ -27,8 +28,8 @@ typedef uint64_t u64;
 #define DDICT_INDEX_GROWTH_RATE 4
 // factor to grow entry storage with when full
 #define DDICT_ENTRIES_GROWTH_RATE 1.5
-
-
+// factor to grow key storage with when full
+#define DDICT_KEY_STORAGE_GROWTH_RATE 2
 
 #ifdef DDICT_TIMINGS
 static double
@@ -47,8 +48,7 @@ ddict_store_key(ddict * dict, const char *str)
     size_t nb = strlen(str) + 1;
     if(nb + dict->key_storage_pos >= dict->key_storage_size)
     {
-        // Realloc might change the address, and then all addresses need to be updated
-        dict->key_storage_size *= 2;
+        dict->key_storage_size *= DDICT_KEY_STORAGE_GROWTH_RATE;
         #ifdef DDICT_TIMINGS
         struct timespec t0, t1;
         clock_gettime(CLOCK_REALTIME, &t0);
