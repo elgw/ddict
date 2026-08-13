@@ -60,8 +60,10 @@ The simplest test look like this in Python:
 
 ``` Python
     dct = dict()
+
     for n in range(N):
         dct[f'{n}'] = 0
+
     for n in range(N):
         assert(dct[f'{n}'] == 0)
 ```
@@ -76,9 +78,8 @@ With ddict, something like this:
         ddict_add(dict, word, 0));
     }
 
-    for(u64 kk = 0; kk < n; kk++) {
+    for(u64 kk = 0; kk < n; kk++)
         assert(ddict_get(dict, word));
-    }
 ```
 
 
