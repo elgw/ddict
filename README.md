@@ -3,6 +3,7 @@
 An throwaway implementation of a dict data structure inspired by the approach taken by [Python](https://github.com/python/cpython/blob/main/Objects/dictobject.c) which is described in this [blog post](https://morepypy.blogspot.com/2015/01/faster-more-memory-efficient-and-more.html).
 
 Summary:
+
 - Entries `(char * key, u64 hash, void * value)` are stored in
   insertion order, i.e., it is possible to loop over them in insertion
   order.
@@ -15,10 +16,13 @@ Summary:
 - If `DDICT_DROP_HASH` is defined, the entries will exclude the hash
 values and calculate them on the fly. This will reduce the memory
 load but cause redundant calculations.
-- Can be built with clang/gcc/musl-gcc, gnu99 standard or above.
+- Can be built with clang/gcc/musl-gcc, gnu99 standard or above
+  (`ddict_test.c` requires gnu99 or above).
 
-Major missing features:
+Limitations/missing features:
+
 - It is not possible to remove entries.
+- Keys are strings.
 
 ## Usage
 
@@ -52,7 +56,7 @@ VmPeak: 2708 kb, VmHWM: 1556 kb
 
 ## Performance indicators (sanity check)
 
-The simplest test look like this in Python
+The simplest test look like this in Python:
 
 ``` Python
     dct = dict()
@@ -62,7 +66,7 @@ The simplest test look like this in Python
         assert(dct[f'{n}'] == 0)
 ```
 
-And with ddict, something like this:
+With ddict, something like this:
 
 ``` C
     ddict * dict = ddict_new(1);
@@ -78,7 +82,7 @@ And with ddict, something like this:
 ```
 
 
-That gave (Intel i7-6700K, GCC 13.3.0)
+Test results (Intel i7-6700K, GCC 13.3.0):
 
 | method | N   | t_create [ms] | t_scan [ms] | t_total [ms] | VmHWM [MB] |
 |--------|-----|--------------:|------------:|-------------:|-----------:|
@@ -99,5 +103,5 @@ That gave (Intel i7-6700K, GCC 13.3.0)
   grow the index, since it has to be re-built each time that happens.
 
 - When the key storage is full, it is `realloc`'ed. That is not
-necessary since we could split up the keys and store them in multiple
-buffers.
+  necessary since we could split up the keys and store them in
+  multiple buffers.

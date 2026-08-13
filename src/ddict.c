@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <assert.h>
 #include <string.h>
+#include <sys/types.h>
 
 // Enable to see some timings
 // #define  DDICT_TIMINGS
@@ -102,13 +103,13 @@ _ddict_entry_id_from_index(const ddict * dict, u64 idx)
     switch(dict->index_type)
     {
     case U8:
-        return (u64) dict->indices8[idx];
+        return (u64) dict->index.U8[idx];
     case U16:
-        return (u64) dict->indices16[idx];
+        return (u64) dict->index.U16[idx];
     case U32:
-        return (u64) dict->indices32[idx];
+        return (u64) dict->index.U32[idx];
     case U64:
-        return (u64) dict->indices64[idx];
+        return (u64) dict->index.U32[idx];
     }
     __builtin_unreachable();
     assert(0);
@@ -121,7 +122,7 @@ _ddict_get_free_index(ddict * dict, u64 idx) {
     switch(dict->index_type)
     {
     case U8:
-        while(dict->indices8[idx] != 0) {
+        while(dict->index.U8[idx] != 0) {
             idx++;
             if(idx == dict->n_indices) {
                 idx = 0;
@@ -132,7 +133,7 @@ _ddict_get_free_index(ddict * dict, u64 idx) {
         }
         break;
     case U16:
-        while(dict->indices16[idx] != 0) {
+        while(dict->index.U16[idx] != 0) {
             idx++;
             if(idx == dict->n_indices) {
                 idx = 0;
@@ -143,7 +144,7 @@ _ddict_get_free_index(ddict * dict, u64 idx) {
         }
         break;
     case U32:
-        while(dict->indices32[idx] != 0) {
+        while(dict->index.U32[idx] != 0) {
             idx++;
             if(idx == dict->n_indices) {
                 idx = 0;
@@ -154,7 +155,7 @@ _ddict_get_free_index(ddict * dict, u64 idx) {
         }
         break;
     case U64:
-        while(dict->indices64[idx] != 0) {
+        while(dict->index.U32[idx] != 0) {
             idx++;
             if(idx == dict->n_indices) {
                 idx = 0;
@@ -174,16 +175,16 @@ _ddict_set_index(ddict * dict, u64 idx, u64 value)
     assert(value != 0);
     switch(dict->index_type) {
     case U8:
-        dict->indices8[idx] = value;
+        dict->index.U8[idx] = value;
         return;
     case U16:
-        dict->indices16[idx] = value;
+        dict->index.U16[idx] = value;
         return;
     case U32:
-        dict->indices32[idx] = value;
+        dict->index.U32[idx] = value;
         return;
     case U64:
-        dict->indices64[idx] = value;
+        dict->index.U32[idx] = value;
         return;
     }
 }
@@ -208,8 +209,8 @@ _ddict_gen_indices(ddict * dict) {
         esize = 8;
     }
 
-    dict->indices8 = calloc(dict->n_indices, esize);
-    if(dict->indices8 == NULL) {
+    dict->index.U8 = calloc(dict->n_indices, esize);
+    if(dict->index.U8 == NULL) {
         return 1;
     }
 
@@ -254,7 +255,7 @@ ddict_new_with_size(const int manage_keys,
     dict->n_entries_alloc = n_indices / 2;
     dict->entries = malloc((dict->n_entries_alloc+1)*sizeof(ddict_entry));
     if(dict->entries == NULL) {
-        free(dict->indices8);
+        free(dict->index.U8);
         free(dict->key_storage);
         free(dict);
         return NULL;
@@ -281,7 +282,7 @@ ddict_free(ddict * dict) {
 #endif
     free(dict->key_storage);
     free(dict->entries);
-    free(dict->indices8);
+    free(dict->index.U8);
     free(dict);
     return;
 }
@@ -366,7 +367,7 @@ ddict_grow_indices(ddict * dict)
     assert(dict->n_indices > 0);
     u64 n_indices = dict->n_indices;
     u64 n_indices2 = n_indices*DDICT_INDEX_GROWTH_RATE;
-    free(dict->indices8);
+    free(dict->index.U8);
     ddict * dict2 = ddict_new_with_size(dict->manage_keys, n_indices2, 0);
     if(dict2 == NULL) { return -1; }
     dict2->entries = dict->entries;
@@ -387,7 +388,7 @@ ddict_grow_indices(ddict * dict)
     }
 
     // Note: No need to switch since all point to the same memory location
-    dict->indices64 = dict2->indices64;
+    dict->index.U32 = dict2->index.U32;
     dict->index_type = dict2->index_type;
 
 #ifdef DDICT_STATS

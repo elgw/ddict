@@ -36,13 +36,13 @@ extern "C" {
 // hash function
 // #define DDICT_STATS
 
-typedef struct {
+    typedef struct {
 #ifndef DDDICT_DROP_HASH
-    uint64_t hash;
+        uint64_t hash;
 #endif
-    char * key;
-    void * value;
-} ddict_entry;
+        char * key;
+        void * value;
+    } ddict_entry;
 
 // Memory layout
 //
@@ -60,69 +60,72 @@ typedef struct {
 // ddict->entries[e], e_k=ddict->entries[ddict->indices[h+k]], etc until e_k is
 // is 0 or a match is found.
 
-typedef enum {U8, U16, U32, U64} indices_bits;
+    typedef enum {U8, U16, U32, U64} indices_bits;
 
-typedef struct {
-    // Array of indices that points into the entries
-    // or has the value 0 if there is nothing to be found
-    indices_bits index_type;
-    union {
-        uint8_t * indices8;
-        uint16_t * indices16;
-        uint32_t * indices32;
-        uint64_t * indices64;
-    };
-    // Size/number of elements of the index.
-    uint64_t n_indices;
+    typedef union { // anonymous unions are not part of C99 :(
+        uint8_t * U8;
+        uint16_t * U16;
+        uint32_t * U32;
+        uint64_t * U64;
+    } index_union;
 
-    // Storage for (hash, key, value) triplets. The first index is left unused.
-    ddict_entry * entries;
-    // Number of entries that are used
-    uint64_t n_entries;
-    // Number of entries that can be used (the actual allocation is
-    // one more element).
-    uint64_t n_entries_alloc;
+    typedef struct {
+        // Array of indices that points into the entries
+        // or has the value 0 if there is nothing to be found
+        indices_bits index_type;
+        index_union index;
 
-    // If the dict allocate and store private copies
-    // of the keys. The values are never owned the dict.
-    int manage_keys;
+        // Size/number of elements of the index.
+        uint64_t n_indices;
 
-    uint8_t * key_storage;
-    uint64_t key_storage_size;
-    uint64_t key_storage_pos; // where to write
+        // Storage for (hash, key, value) triplets. The first index is left unused.
+        ddict_entry * entries;
+        // Number of entries that are used
+        uint64_t n_entries;
+        // Number of entries that can be used (the actual allocation is
+        // one more element).
+        uint64_t n_entries_alloc;
+
+        // If the dict allocate and store private copies
+        // of the keys. The values are never owned the dict.
+        int manage_keys;
+
+        uint8_t * key_storage;
+        uint64_t key_storage_size;
+        uint64_t key_storage_pos; // where to write
 
 #ifdef DDICT_STATS
-    // Count the number of collisions during ddict_add
-    uint64_t n_collision;
+        // Count the number of collisions during ddict_add
+        uint64_t n_collision;
 #endif
 
-} ddict;
+    } ddict;
 
 // Create a new dictionary with the default size
-ddict * ddict_new(int manage_keys);
+    ddict * ddict_new(int manage_keys);
 
 // Free the dictionary and all the key copies that it holds
-void ddict_free(ddict * dict);
+    void ddict_free(ddict * dict);
 
 // Return an ddict_entry with the given key or NULL if
 // nothing is found
-ddict_entry * ddict_get(const ddict *, const char * key);
+    ddict_entry * ddict_get(const ddict *, const char * key);
 
 // Add an ddict_entry to the dictionary unless it already contains
 // the given key. See also ddict_update_entry.
 //
 // Returns 0 on success.
-int
-ddict_add(ddict * dict,
-          char * key, void * value);
+    int
+    ddict_add(ddict * dict,
+              char * key, void * value);
 
 // Return the number of entries in the dictionary
-uint64_t
-ddict_size(const ddict * dict);
+    uint64_t
+    ddict_size(const ddict * dict);
 
 // Update an existing key to point to a new value
-int
-ddict_update_entry(ddict * dict, const char * key, void * value);
+    int
+    ddict_update_entry(ddict * dict, const char * key, void * value);
 
 #ifdef __cplusplus
 }

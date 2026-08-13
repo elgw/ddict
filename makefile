@@ -18,7 +18,7 @@ endif
 # Of course, please check with scan-build and valgrind as well.
 
 ddict_test: ddict_test.c ddict.o
-	$(CC) $(CFLAGS) ddict_test.c ddict.o $(LDFLAGS) -o ddict_test
+	$(CC) $(CFLAGS) ddict_test.c ddict.o $(LDFLAGS)  -o ddict_test
 
 ddict.o: src/ddict.c include/ddict.h
-	$(CC) -c $(CFLAGS) src/ddict.c
+	$(CC) -c $(CFLAGS) src/ddict.c -std=c99

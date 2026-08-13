@@ -400,8 +400,7 @@ void test_synthetic(u64 n)
     printf("Assuring that '0', '1', ..., 'n-1' is in the dict\n");
     for(u64 kk = 0; kk < n; kk++)
     {
-        ddict_entry * e;
-        if( (e= ddict_get(dict, word)) == NULL) {
+        if( ddict_get(dict, word) == NULL) {
             printf("Failed to retrieve '%s'\n", word);
             exit(EXIT_FAILURE);
         }
