@@ -22,7 +22,7 @@ load but cause redundant calculations.
 Limitations/missing features:
 
 - It is not possible to remove entries.
-- Keys are strings.
+- Keys are '\0' terminated strings.
 
 ## Usage
 
