@@ -21,7 +21,7 @@ load but cause redundant calculations.
 
 Limitations/missing features:
 
-- It is not possible to remove entries.
+- Keys can't be removed once inserted (but the "value" of the entries can be altered).
 - Keys are '\0' terminated strings.
 
 ## Usage
@@ -130,3 +130,10 @@ Test results (Intel i7-6700K, GCC 13.3.0, Python 3.12.3, go 1.26.5)
 - When the key storage is full, it is `realloc`'ed. That is not
   necessary since we could split up the keys and store them in
   multiple buffers.
+
+
+## Alternatives?
+
+- Write something that you like and want to use.
+- [https://gitlab.com/rob.izzard/libcditc]
+- [https://github.com/fmela/libdict]
