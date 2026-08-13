@@ -103,27 +103,30 @@ var m = make(map[string]int)
 
 </details>
 
-Test results (Intel i7-6700K, GCC 13.3.0, Python 3.12.3, go 1.26.5)
+Test results (Intel i7-6700K, GCC 13.3.0, Python 3.12.3, go 1.26.5,
+[https://gitlab.com/rob.izzard/libcditc])
 
 | method | N   | t_create [ms] | t_scan [ms] | t_total [ms] | VmHWM [MB] |
 |--------|-----|--------------:|------------:|-------------:|-----------:|
 | ddict  | 1e5 |            19 |           2 |           21 |          6 |
-| go     | 1e5 |            15 |           6 |           22 |          8 |
-| python | 1e5 |            20 |          13 |           33 |         20 |
 | ddict  | 1e6 |           170 |          14 |          183 |         39 |
+| ddict  | 1e7 |         1,822 |         163 |         1985 |        442 |
+| ddict  | 1e8 |        19,447 |       2,419 |       21,886 |      5,093 |
+|        |     |               |             |              |            |
+| go     | 1e5 |            15 |           6 |           22 |          8 |
 | go     | 1e6 |           275 |         156 |          432 |         82 |
+| go     | 1e7 |         3,535 |       1,908 |        5,443 |        686 |
+| go     | 1e8 |        42,592 |      30,695 |       73,287 |      5,749 |
+|        |     |               |             |              |            |
+| python | 1e5 |            20 |          13 |           33 |         20 |
 | python | 1e6 |           267 |         232 |          500 |         87 |
-| ddict  | 1e7 |          1822 |         163 |         1985 |        442 |
-| go     | 1e7 |          3535 |        1908 |         5443 |        686 |
-| python | 1e7 |          3562 |        2986 |         6548 |        720 |
-| ddict  | 1e8 |         19447 |        2419 |        21886 |       5093 |
-| go     | 1e8 |         42592 |       30695 |        73287 |       5749 |
-| python | 1e8 |         46690 |       20669 |        77359 |      11234 |
+| python | 1e7 |         3,562 |       2,986 |        6,548 |        720 |
+| python | 1e8 |        46,690 |      20,669 |       77,359 |     11,234 |
 |        |     |               |             |              |            |
 | cdicts | 1e5 |            59 |          23 |           83 |         31 |
-| cdicts | 1e6 |           733 |         345 |         1078 |        291 |
-| cdicts | 1e7 |          8268 |        3452 |        11720 |       2946 |
-| cdicts | 1e8 |        104044 |       35993 |       140037 |      30224 |
+| cdicts | 1e6 |           733 |         345 |        1,078 |        291 |
+| cdicts | 1e7 |         8,268 |       3,452 |       11,720 |      2,946 |
+| cdicts | 1e8 |       104,044 |      35,993 |      140,037 |     30,224 |
 |        |     |               |             |              |            |
 
 ## Notes
@@ -134,10 +137,3 @@ Test results (Intel i7-6700K, GCC 13.3.0, Python 3.12.3, go 1.26.5)
 - When the key storage is full, it is `realloc`'ed. That is not
   necessary since we could split up the keys and store them in
   multiple buffers.
-
-
-## Alternatives?
-
-- Write something that you like and want to use.
-- [https://gitlab.com/rob.izzard/libcditc]
-- [https://github.com/fmela/libdict]
