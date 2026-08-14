@@ -260,5 +260,5 @@ Results:
   `libcdict` while `ddict` manage copies of the keys
   internally. When the key storage is full, it is `realloc`'ed. That is not
   necessary since we could split up the keys and store them in
-  multiple buffers.  `ddict` runs slightly faster when they keys are kept
+  multiple buffers.  `ddict` runs slightly faster when the keys are kept
   in a fixed buffer (not shown in the table).
