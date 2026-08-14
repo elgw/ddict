@@ -85,6 +85,14 @@ ddict_store_key(ddict * dict, const char *str)
     return retpos;
 }
 
+#if 0
+static u64
+_ddict_wordhash(const char * word)
+{
+    return (u64) word;
+}
+#endif
+
 static u64
 _ddict_wordhash(const char * word)
 {
