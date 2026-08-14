@@ -27,7 +27,7 @@ extern "C" {
 
     #define DDICT_VERSION_MAJOR 1
     #define DDICT_VERSION_MINOR 0
-    #define DDICT_VERSION_PATCH 1
+    #define DDICT_VERSION_PATCH 2
 
 // If DDICT_DROP_HASH is defined, the hash values will not be
 // calculated when needed, i.e. not stored.
