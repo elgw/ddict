@@ -7,7 +7,7 @@ which is described in this [blog
 post](https://morepypy.blogspot.com/2015/01/faster-more-memory-efficient-and-more.html).
 
 
-### Summary:
+### Summary
 
 - Entries `(char * key, u64 hash, void * value)` be accessed directly
   by their insertion order, i.e., can be looped over.
@@ -18,25 +18,27 @@ load but cause redundant calculations.
 - Can be built with clang/gcc/musl-gcc, gnu99 standard or above
   (`ddict_test.c` requires gnu99 or above).
 - After compilation, `ddict.o` is approximately 5 kB
-  (`libglib-2.0.so.0.8000.0` is 1.3 MB but also provides other things)
+  (`libglib-2.0.so.0.8000.0` is 1.3 MB, `libcdict.so` is 2.2M, but
+  those are more feature rich).
 - Performance in the expected range (see below).
-- Approx 400 SLOC so it should not be too complicate to adjust for
-  other use cases.
+- Approx 400 SLOC so it should not be too complicate to adjust the
+  code for other use cases.
 
-Limitations/missing features:
+Limitations/missing features
 
 - Keys can't be removed once inserted (but the "value" of the entries
   can be altered).
 - Keys are `'\0'` terminated strings.
 
-Internals:
+Internals
+
 - Open Addressing with linear probing.
 - Index starts as 8 bit per element and switches to larger element
   sizes as needed.
 
 ## Usage
 
-You just need `ddict.h` and `ddict.c`. For examples, see `ddict_test.c`.
+You just need `ddict.h` and `ddict.c`. For example usage, see `ddict_test.c`.
 
 ## API
 See `ddict.h`
@@ -88,7 +90,7 @@ argument `manage_keys = 1`.
     }
 ```
 
-With **glib** we use the same hash function as we did with ddict:
+With **glib** we use the same hash function as we did with `ddict`:
 
 ``` C
     GHashTable* H = g_hash_table_new (_ddict_wordhash,
@@ -123,7 +125,7 @@ for(u64 n = 0; n < N; n++)
     }
 ```
 
-I don't know go, but this seems similar enough:
+I don't know `golang`, but this seems similar enough:
 
 ``` go
 var m = make(map[string]int)
