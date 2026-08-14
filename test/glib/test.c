@@ -97,7 +97,7 @@ _ddict_wordhash(const void * _word)
 
 int main(int argc, char ** argv)
 {
-    uint64_t N = 100000;
+    u64 N = 100000;
     if(argc > 1) {
         N = atol(argv[1]);
     }
@@ -117,11 +117,11 @@ int main(int argc, char ** argv)
     char * key_storage = malloc(key_storage_size);
     char * key_write = key_storage;
 
-    for(uint64_t n = 0; n < N; n++)
+    for(u64 n = 0; n < N; n++)
     {
-        sprintf(key_write, "%lu", n);
+        u64 nwritten = sprintf(key_write, "%lu", n);
         g_hash_table_insert(H, key_write, NULL);
-        key_write += strlen(key_write);
+        key_write += nwritten + 1;
         assert(key_write  < key_storage + key_storage_size);
     }
 
@@ -133,15 +133,15 @@ int main(int argc, char ** argv)
     clock_gettime(CLOCK_REALTIME, &t2);
 
     key_write = key_storage;
-    for(uint64_t n = 0; n < N; n++)
+    for(u64 n = 0; n < N; n++)
     {
-        sprintf(key_write, "%lu", n);
+        u64 nwritten = sprintf(key_write, "%lu", n);
         if(g_hash_table_contains(H, key_write) == 0)
         {
             printf("Failure\n");
             exit(EXIT_FAILURE);
         };
-        key_write += strlen(key_write);
+        key_write += nwritten + 1;
     }
     clock_gettime(CLOCK_REALTIME, &t3);
 

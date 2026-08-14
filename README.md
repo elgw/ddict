@@ -89,7 +89,24 @@ dictionary to own the keys (via the argument `manage_keys = 1`).
         assert(ddict_get(dict, word));
 ```
 
+With **glib** we use the same hash function as we did with ddict:
 
+``` C
+    GHashTable* H = g_hash_table_new (_ddict_wordhash,
+                                      g_str_equal);
+```
+
+Since the hash table can't own the keys, we write them to a dense
+buffer before inserting:
+
+``` C
+for(uint64_t n = 0; n < N; n++)
+    {
+        u64 nwritten = sprintf(key_write, "%lu", n);
+        g_hash_table_insert(H, key_write, NULL);
+        key_write += nwritten + 1;
+    }
+```
 
 With go:
 
