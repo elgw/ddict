@@ -1,4 +1,4 @@
-## ddict
+## ddict 1.0.1
 
 An throwaway implementation of a dict data structure inspired by the
 approach taken by
@@ -9,14 +9,8 @@ post](https://morepypy.blogspot.com/2015/01/faster-more-memory-efficient-and-mor
 
 ### Summary:
 
-- Entries `(char * key, u64 hash, void * value)` are stored in
-  insertion order, i.e., it is possible to loop over them in insertion
-  order.
-- Open Addressing with linear probing.
-- Index starts as 8 bit per element and switches to larger element
-  sizes as needed.
-- Grows dynamically, doubles when 50% of the index capacity is reached.
-- Performance in the expected range (see below).
+- Entries `(char * key, u64 hash, void * value)` be accessed directly
+  by their insertion order, i.e., can be looped over.
 - Keys are either owned by the dictionary or handled externally.
 - If `DDICT_DROP_HASH` is defined, the entries will exclude the hash
 values and calculate them on the fly. This will reduce the memory
@@ -25,13 +19,20 @@ load but cause redundant calculations.
   (`ddict_test.c` requires gnu99 or above).
 - After compilation, `ddict.o` is approximately 5 kB
   (`libglib-2.0.so.0.8000.0` is 1.3 MB but also provides other things)
+- Performance in the expected range (see below).
+- Approx 400 SLOC so it should not be too complicate to adjust for
+  other use cases.
 
 Limitations/missing features:
 
 - Keys can't be removed once inserted (but the "value" of the entries
   can be altered).
 - Keys are `'\0'` terminated strings.
-- Adjust the code for your use case(s).
+
+Internals:
+- Open Addressing with linear probing.
+- Index starts as 8 bit per element and switches to larger element
+  sizes as needed.
 
 ## Usage
 
@@ -67,8 +68,8 @@ We use Python as the base case, and express the test simply as:
 
 In this case the keys are owned by the dict/runtime.
 
-With ddict we can perform about the same thing if we tell the
-dictionary to own the keys (via the argument `manage_keys = 1`).
+Similarly, With `ddict` we let the dictionary own the keys via the
+argument `manage_keys = 1`.
 
 ``` C
     ddict * dict = ddict_new(1);
@@ -106,8 +107,8 @@ for(uint64_t n = 0; n < N; n++)
     }
 ```
 
-And also re-generate the key strings while searching for fairness (the
-string generation takes a considerable time).
+key strings are re-generated while searching (for fairness, the string
+generation takes a considerable time).
 
 ``` C
 for(u64 n = 0; n < N; n++)
@@ -122,7 +123,7 @@ for(u64 n = 0; n < N; n++)
     }
 ```
 
-With go I have no idea of how things work, but this seems similar enough:
+I don't know go, but this seems similar enough:
 
 ``` go
 var m = make(map[string]int)
@@ -137,7 +138,7 @@ var m = make(map[string]int)
 	}
 ```
 
-For cdicts I used:
+With `cdicts` I used:
 
 ``` C
 CDict_new(c);
@@ -163,8 +164,8 @@ for(uint64_t n = 0; n < N; n++)
 
 </details>
 
-Test were run with Intel i7-6700K, GCC 13.3.0, glib 2.39, Python 3.12.3, go
-1.26.5, [https://gitlab.com/rob.izzard/libcditc]). C-programs were
+Test were run with an Intel i7-6700K, GCC 13.3.0, glib 2.39, Python 3.12.3, go
+1.26.5, [libcdict 1.51](https://gitlab.com/rob.izzard/libcdict)). C-programs were
 compiled with `-O3 -ffast-math -DNDEBUG -march=native -mtune=native`
 and linked with `-flto`.
 
