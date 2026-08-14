@@ -77,7 +77,18 @@ get_peak_memory_KB(size_t * _VmPeak, size_t * _VmHWM)
     return 0;
 }
 
-void example1(void)
+static void
+print_peak_mem(){
+    size_t VmPeak, VmHWM;
+    if(get_peak_memory_KB(&VmPeak, &VmHWM) == 0){
+        printf("\n");
+        printf("VmPeak: %zu kb, VmHWM: %zu kb\n", VmPeak, VmHWM);
+    }
+    return;
+}
+
+static void
+example1(void)
 {
     printf("#\n# Example 1 -- basic usage\n#\n");
     ddict * dict = ddict_new(1);
@@ -107,7 +118,8 @@ void example1(void)
     return;
 }
 
-void example2(void)
+static void
+example2(void)
 {
     printf("#\n# Example 2 -- looping over entries\n#\n");
     ddict * dict = ddict_new(1);
@@ -221,7 +233,7 @@ word_reader_read(wreader * reader, char ** result)
     assert(0);
     return 0;
 
-return_word:
+ return_word:
     ;
     reader->word[wpos] = '\0';
     result[0] = reader->word;
@@ -349,14 +361,14 @@ test_dict_keys(const char * dictfile, const char * txtfile, int manage_keys, int
             }
         }
     } else {
-    while(word_reader_read(reader, &word))
-    {
-        if(ddict_get(dict, word) == NULL){
-            n_unknown++;
-        } else {
-            n_known++;
+        while(word_reader_read(reader, &word))
+        {
+            if(ddict_get(dict, word) == NULL){
+                n_unknown++;
+            } else {
+                n_known++;
+            }
         }
-    }
     }
     word_reader_free(reader);
     clock_gettime(CLOCK_REALTIME, &t2);
@@ -377,10 +389,10 @@ test_dict_keys(const char * dictfile, const char * txtfile, int manage_keys, int
     return 0;
 }
 
-void test_synthetic(u64 n)
+static int
+test_synthetic(u64 n)
 {
-    printf("test_synthetic(%lu)\n", n);
-    printf("Inserting '0', '1', ..., 'n-1'\n");
+    printf("Inserting \"0\", \"2\", ..., \"N-1\" (N=%lu)\n", n);
     struct timespec t0, t1, t2, t3;
 
     clock_gettime(CLOCK_REALTIME, &t0);
@@ -398,7 +410,7 @@ void test_synthetic(u64 n)
     printf("Insert: %.3f ms (avg: %.3f ns)\n", 1000.0 * timespec_diff(&t1, &t0),
            1000000000.0 * timespec_diff(&t1, &t0) / (double) n);
 
-    printf("Assuring that '0', '1', ..., 'n-1' are in the dict\n");
+    printf("Assuring that \"0\", \"1\", ... are in the dict\n");
     clock_gettime(CLOCK_REALTIME, &t2);
     for(u64 kk = 0; kk < n; kk++)
     {
@@ -408,72 +420,91 @@ void test_synthetic(u64 n)
             exit(EXIT_FAILURE);
         }
     }
+    ddict_free(dict);
     clock_gettime(CLOCK_REALTIME, &t3);
 
     printf("Scan: %.3f ms (avg: %.3f ns)\n", 1000.0 * timespec_diff(&t3, &t2),
            1000000000.0 * timespec_diff(&t3, &t2) / (double) n);
     printf("Total: %.3f ms\n",
            1000.0 * (timespec_diff(&t1, &t0) + timespec_diff(&t3, &t2)));;
-    ddict_free(dict);
+
+    print_peak_mem();
+    return EXIT_SUCCESS;
 }
 
-int main(int argc, char ** argv)
+static int
+test_dictionary(int argc, char ** argv)
 {
-    const char* dictfile  = "dictwords.txt";
-    const char* txtfile = "text.txt";
-
-    int method = 1;
-    if(argc > 1) {
-        method = atoi(argv[1]);
+    if(argc < 2) {
+        printf("Error, two file names needed\n");
+        return EXIT_FAILURE;
     }
 
-    if(argc > 2) {
-        dictfile = argv[2];
-    }
-    if(argc > 3) {
-        txtfile = argv[3];
-    }
+    const char * dictfile = argv[0];
+    const char * txtfile = argv[1];
 
-    if(method == 0)
-    {
-        example1();
-        example2();
-    }
 
-    if(method == 1) {
+    printf("\nTest 1/2\n");
 #ifdef DDICT_DROP_HASH
-        printf("-> Managed keys & DDICT_DROP_HASH\n");
+    printf("-> Managed keys & DDICT_DROP_HASH\n");
 #else
-        printf("-> Managed keys, hash values cached\n");
+    printf("-> Managed keys, hash values cached\n");
 #endif
-        test_dict_keys(dictfile, txtfile, 1, 0);
-    }
+    test_dict_keys(dictfile, txtfile, 1, 0);
 
-    if(method == 2){
+
+    printf("\nTest 2/2\n");
 #ifdef DDICT_DROP_HASH
-        printf("-> External keys & DDICT_DROP_HASH\n");
+    printf("-> External keys & DDICT_DROP_HASH\n");
 #else
-        printf("-> External keys, hash values cached\n");
+    printf("-> External keys, hash values cached\n");
 #endif
-        test_dict_keys(dictfile, txtfile, 0, 0);
-    }
-
-    if(method == 4){ // Print out word not in the dictionary
-        test_dict_keys(dictfile, txtfile, 0, 1);
-    }
-
-    if(method == 5){
-        u64 n = 1000;
-        if(argc > 2) {
-            n = atol(argv[2]);
-        }
-        test_synthetic(n);
-    }
+    test_dict_keys(dictfile, txtfile, 0, 0);
 
     size_t VmPeak, VmHWM;
     if(get_peak_memory_KB(&VmPeak, &VmHWM) == 0){
         printf("\n");
         printf("VmPeak: %zu kb, VmHWM: %zu kb\n", VmPeak, VmHWM);
     }
+
+    print_peak_mem();
     return EXIT_SUCCESS;
+}
+
+int
+main(int argc, char ** argv)
+{
+    if(argc > 1){
+        if(strcmp(argv[1], "--help") == 0)
+        {
+            printf("Usage:\n");
+            printf("%s"
+                   "\n\t Run the basic examples\n",
+                   argv[0]);
+            printf("%s N"
+                   "\n\t Run the toy benchmark with N words\n",
+                   argv[0]);
+            printf("%s --dict dict.txt text.txt"
+                   "\n\t Load the words from dicts.txt (one per line) and use it"
+                   "\n\t to fund unknown words in text.txt\n",
+                   argv[1]);
+            exit(EXIT_SUCCESS);
+        }
+        if(strcmp(argv[1], "--dict") == 0)
+        {
+            return test_dictionary(argc-2, argv+2);
+        }
+    }
+
+    if(argc == 1)
+    {
+        printf("For more uses, try running with --help\n");
+        printf("\n");
+        example1();
+        example2();
+        exit(EXIT_SUCCESS);
+    }
+
+    u64 n = atol(argv[1]);
+    return test_synthetic(n);
 }
