@@ -138,7 +138,7 @@ int main(int argc, char ** argv)
         u64 nwritten = sprintf(key_write, "%lu", n);
         if(g_hash_table_contains(H, key_write) == 0)
         {
-            printf("Failure\n");
+            printf("Failed to retrieve '%s'\n", key_write);
             exit(EXIT_FAILURE);
         };
         key_write += nwritten + 1;

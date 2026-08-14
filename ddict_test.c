@@ -401,6 +401,7 @@ void test_synthetic(u64 n)
     clock_gettime(CLOCK_REALTIME, &t2);
     for(u64 kk = 0; kk < n; kk++)
     {
+        sprintf(word, "%lu", kk);
         if( ddict_get(dict, word) == NULL) {
             printf("Failed to retrieve '%s'\n", word);
             exit(EXIT_FAILURE);
