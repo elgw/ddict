@@ -121,7 +121,7 @@ int main(int argc, char ** argv)
     for(u64 n = 0; n < N; n++)
     {
         u64 nwritten = sprintf(key_write, "%lu", n);
-        cdict__add(&cdict_instance, key_write, 100);
+        cdict__add(&cdict_instance, key_write, 0);
         key_write += nwritten + 1;
     }
 

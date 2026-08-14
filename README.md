@@ -140,7 +140,47 @@ var m = make(map[string]int)
 	}
 ```
 
-With `libcdict` I used:
+With [cdict.h](https://github.com/RobusGauli/cdict.h) I used:
+
+``` C
+# initialization
+typedef char* string;
+CDict(string, int) cdict_t;
+cdict_t cdict_instance;
+cdict__init(&cdict_instance);
+
+// ...
+
+// Add elements
+    for(u64 n = 0; n < N; n++)
+    {
+        u64 nwritten = sprintf(key_write, "%lu", n);
+        cdict__add(&cdict_instance, key_write, 0);
+        key_write += nwritten + 1;
+    }
+
+// ...
+
+// Retrieval
+for(u64 n = 0; n < N; n++)
+    {
+        u64 nwritten = sprintf(key_write, "%lu", n);
+        int value;
+        if(cdict__get(&cdict_instance, key_write, &value) == 0) {
+            printf("Failed to retrieve '%s'\n", key_write);
+            exit(EXIT_FAILURE);
+        };
+        key_write += nwritten + 1;
+    }
+
+// ...
+
+// Cleanup
+cdict__clear(&cdict_instance);
+cdict__free(&cdict_instance);
+```
+
+With [libcdict 1.51](https://gitlab.com/rob.izzard/libcdict) I used:
 
 ``` C
 CDict_new(c);
@@ -166,8 +206,10 @@ for(uint64_t n = 0; n < N; n++)
 
 </details>
 
-Test were run with an Intel i7-6700K, GCC 13.3.0, glib 2.39, Python 3.12.3, go
-1.26.5, [libcdict 1.51](https://gitlab.com/rob.izzard/libcdict)). C-programs were
+Test were run with an Intel i7-6700K, GCC 13.3.0, glib 2.39, Python
+3.12.3, go 1.26.5, [libcdict
+1.51](https://gitlab.com/rob.izzard/libcdict), [cdict.h
+afefd33](https://github.com/RobusGauli/cdict.h)). C-programs were
 compiled with `-O3 -ffast-math -DNDEBUG -march=native -mtune=native`
 and linked with `-flto`.
 
@@ -184,6 +226,11 @@ Results:
 | glib     | 1e6 |           183 |          66 |          248 |     **42** |
 | glib     | 1e7 |         1,409 |         748 |        2,156 |    **341** |
 | glib     | 1e8 |        23,292 |       9,203 |       32,346 |  **2,967** |
+|          |     |               |             |              |            |
+| cdict.h  | 1e5 |            20 |           7 |           27 |         11 |
+| cdict.h  | 1e6 |           259 |         152 |          411 |         80 |
+| cdict.h  | 1e7 |         2,949 |       1,770 |        4,721 |        636 |
+| cdict.h  | 1e8 |        42,158 |      22,595 |       64,752 |     10,253 |
 |          |     |               |             |              |            |
 | go       | 1e5 |            15 |           6 |           22 |          8 |
 | go       | 1e6 |           275 |         156 |          432 |         82 |
