@@ -206,7 +206,7 @@ for(uint64_t n = 0; n < N; n++)
 
 </details>
 
-Test were run with an Intel i7-6700K, GCC 13.3.0, glib 2.39, Python
+Test were run with an Intel i7-6700K, GCC 13.3.0, [glib 2.39](https://docs.gtk.org/glib/), Python
 3.12.3, go 1.26.5, [libcdict
 1.51](https://gitlab.com/rob.izzard/libcdict), [cdict.h
 afefd33](https://github.com/RobusGauli/cdict.h)). C-programs were
