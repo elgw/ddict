@@ -60,7 +60,7 @@ Comparing apples to oranges, really!
 
 <details><summary>Test details</summary>
 
-With Python:
+We use Python as the base case, and express the test simply as:
 
 ``` Python
     dct = dict()
@@ -72,7 +72,10 @@ With Python:
         assert(dct[f'{n}'] == 0)
 ```
 
-With ddict:
+in this case the keys are owned by the dict or runtime.
+
+With ddict we can perform about the same thing if we tell the
+dictionary to own the keys (via the argument `manage_keys = 1`).
 
 ``` C
     ddict * dict = ddict_new(1);
@@ -85,6 +88,8 @@ With ddict:
     for(u64 kk = 0; kk < n; kk++)
         assert(ddict_get(dict, word));
 ```
+
+
 
 With go:
 
@@ -108,15 +113,15 @@ Test results (Intel i7-6700K, GCC 13.3.0, Python 3.12.3, go 1.26.5,
 
 | method | N   | t_create [ms] | t_scan [ms] | t_total [ms] | VmHWM [MB] |
 |--------|-----|--------------:|------------:|-------------:|-----------:|
-| glib   | 1e5 |            13 |           4 |       **18** |          5 |
-| glib   | 1e6 |           185 |          42 |          227 |         41 |
-| glib   | 1e7 |          1414 |         427 |         1840 |        332 |
-| glib   | 1e8 |               |             |              |            |
+| ddict  | 1e5 |            18 |           2 |           20 |          6 |
+| ddict  | 1e6 |           187 |          14 |      **201** |     **40** |
+| ddict  | 1e7 |         1,353 |         164 |    **1,517** |        442 |
+| ddict  | 1e8 |        18,719 |       2,238 |   **20,957** |      5,092 |
 |        |     |               |             |              |            |
-| ddict  | 1e5 |            19 |           2 |           21 |          6 |
-| ddict  | 1e6 |           170 |          14 |      **183** |         39 |
-| ddict  | 1e7 |         1,822 |         163 |         1,985 |        442 |
-| ddict  | 1e8 |        19,447 |       2,419 |       21,886 |      5,093 |
+| glib   | 1e5 |            13 |           4 |       **18** |      **5** |
+| glib   | 1e6 |           185 |          42 |          227 |         41 |
+| glib   | 1e7 |          1414 |         427 |        1,840 |    **332** |
+| glib   | 1e8 |        23,305 |       4,438 |       27,742 |  **2,870** |
 |        |     |               |             |              |            |
 | go     | 1e5 |            15 |           6 |           22 |          8 |
 | go     | 1e6 |           275 |         156 |          432 |         82 |

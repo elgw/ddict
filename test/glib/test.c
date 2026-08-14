@@ -136,7 +136,11 @@ int main(int argc, char ** argv)
     for(uint64_t n = 0; n < N; n++)
     {
         sprintf(key_write, "%lu", n);
-        assert(g_hash_table_contains(H, key_write));
+        if(g_hash_table_contains(H, key_write) == NULL)
+        {
+            printf("Failure\n");
+            exit(EXIT_FAILURE);
+        };
         key_write += strlen(key_write);
     }
     clock_gettime(CLOCK_REALTIME, &t3);
