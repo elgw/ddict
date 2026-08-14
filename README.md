@@ -137,6 +137,30 @@ var m = make(map[string]int)
 	}
 ```
 
+For cdicts I used:
+
+``` C
+CDict_new(c);
+# ...
+for(uint64_t n = 0; n < N; n++)
+    {
+        sprintf(word, "%lu", n);
+        CDict_set_with_types(c, word, CDICT_DATA_TYPE_STRING,
+                             0, CDICT_DATA_TYPE_INT);
+    }
+# ...
+for(uint64_t n = 0; n < N; n++)
+    {
+        sprintf(word, "%lu", n);
+        if(CDict_nest_get_entry(c, word) == NULL)
+        {
+            printf("Failed to retrieve '%s'\n", word);
+            exit(EXIT_FAILURE);
+        }
+    }
+    CDict_free_and_free_contents(c);
+```
+
 </details>
 
 Test were run with Intel i7-6700K, GCC 13.3.0, glib 2.39, Python 3.12.3, go
@@ -189,4 +213,5 @@ Results:
   multiple buffers. The glib benchmark does not suffer from this since
   all keys are written to a fixed buffer.
 
-- glib could use the address as the has function which would be even faster.
+- For this test, glib could have used the address as the hash function
+  which would be even faster.

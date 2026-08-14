@@ -104,9 +104,14 @@ int main(int argc, char ** argv)
     for(uint64_t n = 0; n < N; n++)
     {
         sprintf(word, "%lu", n);
-        assert(CDict_nest_get_entry(c, word) != NULL);
+        if(CDict_nest_get_entry(c, word) == NULL)
+        {
+            printf("Failed to retrieve '%s'\n", word);
+            exit(EXIT_FAILURE);
+        }
     }
 
+    CDict_free_and_free_contents(c);
     clock_gettime(CLOCK_REALTIME, &t3);
 
     printf("Scan: %.3f ms (avg: %.3f ns)\n", 1000.0 * timespec_diff(&t3, &t2),
@@ -114,7 +119,7 @@ int main(int argc, char ** argv)
     printf("Total: %.3f ms\n",
            1000.0 * (timespec_diff(&t1, &t0) + timespec_diff(&t3, &t2)));;
 
-    CDict_free_and_free_contents(c);
+
     size_t VmPeak, VmHWM;
     if(get_peak_memory_KB(&VmPeak, &VmHWM) == 0){
         printf("\n");
