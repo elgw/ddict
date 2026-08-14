@@ -30,7 +30,7 @@ Limitations/missing features:
 
 - Keys can't be removed once inserted (but the "value" of the entries
   can be altered).
-- Keys are '\0' terminated strings.
+- Keys are `'\0'` terminated strings.
 - Adjust the code for your use case(s).
 
 ## Usage

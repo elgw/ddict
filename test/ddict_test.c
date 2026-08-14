@@ -113,7 +113,8 @@ void example2(void)
     ddict * dict = ddict_new(1);
     ddict_add(dict, "username", "john_doe");
     ddict_add(dict, "password", "1234");
-    for(uint64_t kk = 0; kk < ddict_size(dict); kk++)
+    // Please note that the entries are offset by 1
+    for(uint64_t kk = 1; kk <= ddict_size(dict); kk++)
     {
         ddict_entry * ent = &dict->entries[kk];
         printf("entry %lu/%lu key: '%s', value: '%s'\n", kk+1, ddict_size(dict),
