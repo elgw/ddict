@@ -1,5 +1,9 @@
 // See https://docs.gtk.org/glib/struct.HashTable.html
 
+// For the test suite, we could have let glib use `g_direct_hash` which
+// would be even faster. But that would not make a fair comparison.
+
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>

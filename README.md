@@ -18,7 +18,7 @@ load but cause redundant calculations.
 - Can be built with clang/gcc/musl-gcc, gnu99 standard or above
   (`ddict_test.c` requires gnu99 or above).
 - After compilation, `ddict.o` is approximately 5 kB
-  (`libglib-2.0.so.0.8000.0` is 1.3 MB, `libcdict.so` is 2.2M, but
+  (`libglib-2.0.so.0.8000.0` is 1.3 MB, `libcdict.so` is 2.2M, however,
   those are more feature rich).
 - Performance in the expected range (see below).
 - Approx 400 SLOC so it should not be too complicate to adjust the
@@ -203,8 +203,6 @@ Results:
 
 ### Notes
 
-- `VmHWM` is what it is.
-
 - The memory usage of `ddict` can be reduced as the cost of speed, see
   the parameters close to the top of `ddict.c`.
 
@@ -216,5 +214,6 @@ Results:
   multiple buffers. The glib benchmark does not suffer from this since
   all keys are written to a fixed buffer.
 
-- For this test, glib could have used the address as the hash function
-  which would be even faster.
+  The `glib` test allocates a fixed buffer for the key storage that
+  never needs to grow, while `ddict` use an internal buffer that is
+  expanded a few times.
