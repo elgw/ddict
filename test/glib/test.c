@@ -136,7 +136,7 @@ int main(int argc, char ** argv)
     for(uint64_t n = 0; n < N; n++)
     {
         sprintf(key_write, "%lu", n);
-        if(g_hash_table_contains(H, key_write) == NULL)
+        if(g_hash_table_contains(H, key_write) == 0)
         {
             printf("Failure\n");
             exit(EXIT_FAILURE);
