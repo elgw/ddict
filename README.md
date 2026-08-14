@@ -256,11 +256,9 @@ Results:
 - It is costly to `realloc` the entries, and even more costly to
   grow the index, since it has to be re-built each time that happens.
 
-- When the key storage is full, it is `realloc`'ed. That is not
+- In the tests, a fixed buffer is used to store the keys for `glib`, `cdict.h` and
+  `libcdict` while `ddict` manage copies of the keys
+  internally. When the key storage is full, it is `realloc`'ed. That is not
   necessary since we could split up the keys and store them in
-  multiple buffers. The glib benchmark does not suffer from this since
-  all keys are written to a fixed buffer.
-
-  The `glib` test allocates a fixed buffer for the key storage that
-  never needs to grow, while `ddict` use an internal buffer that is
-  expanded a few times.
+  multiple buffers.  `ddict` runs slightly faster when they keys are kept
+  in a fixed buffer (not shown in the table).
