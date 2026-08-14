@@ -568,8 +568,8 @@ main(int argc, char ** argv)
 
     int n = atoi(argv[1]);
     if(n > 0){
-        return test_synthetic_external(n);
-    } if( n < 0) {
-        return test_synthetic(-n);
+        return test_synthetic(n);
+    } else {
+        return test_synthetic_external(-n);
     }
 }

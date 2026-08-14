@@ -74,7 +74,7 @@ Similarly, With `ddict` we let the dictionary own the keys via the
 argument `manage_keys = 1`.
 
 ``` C
-    ddict * dict = ddict_new(1);
+    ddict * dict = ddict_new(1); // the dictionary owns copies of the keys
 
     for(u64 kk = 0; kk < n; kk++) {
         sprintf(word, "%lu", kk);
