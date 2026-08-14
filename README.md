@@ -15,7 +15,7 @@ post](https://morepypy.blogspot.com/2015/01/faster-more-memory-efficient-and-mor
 - If `DDICT_DROP_HASH` is defined, the entries will exclude the hash
 values and calculate them on the fly. This will reduce the memory
 load but cause redundant calculations.
-- Can be built with clang/gcc/musl-gcc, gnu99 standard or above
+- Can be built with clang/gcc/musl-gcc, c99 standard or above
   (`ddict_test.c` requires gnu99 or above).
 - After compilation, `ddict.o` is approximately 5 kB
   (`libglib-2.0.so.0.8000.0` is 1.3 MB, `libcdict.so` is 2.2M, however,
