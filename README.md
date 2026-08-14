@@ -84,9 +84,14 @@ dictionary to own the keys (via the argument `manage_keys = 1`).
         sprintf(word, "%lu", kk);
         ddict_add(dict, word, 0));
     }
-
     for(u64 kk = 0; kk < n; kk++)
-        assert(ddict_get(dict, word));
+    {
+        sprintf(word, "%lu", kk);
+        if( ddict_get(dict, word) == NULL) {
+            printf("Failed to retrieve '%s'\n", word);
+            exit(EXIT_FAILURE);
+        }
+    }
 ```
 
 With **glib** we use the same hash function as we did with ddict:
@@ -145,14 +150,14 @@ Test results (Intel i7-6700K, GCC 13.3.0, Python 3.12.3, go 1.26.5,
 
 | method | N   | t_create [ms] | t_scan [ms] | t_total [ms] | VmHWM [MB] |
 |--------|-----|--------------:|------------:|-------------:|-----------:|
-| ddict  | 1e5 |            18 |           2 |           20 |          6 |
+| ddict  | 1e5 |            18 |           2 |       **20** |          6 |
 | ddict  | 1e6 |           187 |          14 |      **201** |     **40** |
 | ddict  | 1e7 |         1,353 |         164 |    **1,517** |        442 |
 | ddict  | 1e8 |        18,719 |       2,238 |   **20,957** |      5,092 |
 |        |     |               |             |              |            |
-| glib   | 1e5 |            13 |           4 |       **18** |      **5** |
-| glib   | 1e6 |           185 |          42 |          227 |         41 |
-| glib   | 1e7 |          1414 |         427 |        1,840 |    **332** |
+| glib   | 1e5 |            13 |           7 |       **20** |      **5** |
+| glib   | 1e6 |           183 |          66 |          248 |         42 |
+| glib   | 1e7 |          1409 |         748 |        2,156 |    **341** |
 | glib   | 1e8 |        23,305 |       4,438 |       27,742 |  **2,870** |
 |        |     |               |             |              |            |
 | go     | 1e5 |            15 |           6 |           22 |          8 |
