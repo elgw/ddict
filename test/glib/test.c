@@ -113,7 +113,7 @@ int main(int argc, char ** argv)
     GHashTable* H = g_hash_table_new (_ddict_wordhash,
                                       g_str_equal);
 
-    size_t key_storage_size = 7*N;
+    size_t key_storage_size = 8*N;
     char * key_storage = malloc(key_storage_size);
     char * key_write = key_storage;
 
