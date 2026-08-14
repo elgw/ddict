@@ -23,9 +23,11 @@ extern "C" {
 // - If the hash value is cheap to compute, there is no need to save
 //   them, disable hash storage by defining DDICT_DROP_HASH below.
 //
-// Version 1.0.0
-// Erik Wernersson, 2026-08-12
+// Erik Wernersson, 2026-08-14
 
+    #define DDICT_VERSION_MAJOR 1
+    #define DDICT_VERSION_MINOR 0
+    #define DDICT_VERSION_PATCH 1
 
 // If DDICT_DROP_HASH is defined, the hash values will not be
 // calculated when needed, i.e. not stored.
