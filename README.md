@@ -143,7 +143,7 @@ var m = make(map[string]int)
 With [cdict.h](https://github.com/RobusGauli/cdict.h) I used:
 
 ``` C
-# initialization
+// initialization
 typedef char* string;
 CDict(string, int) cdict_t;
 cdict_t cdict_instance;

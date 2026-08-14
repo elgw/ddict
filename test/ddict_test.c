@@ -392,6 +392,7 @@ test_dict_keys(const char * dictfile, const char * txtfile, int manage_keys, int
 static int
 test_synthetic(u64 n)
 {
+    printf("Storing keys in the dict\n");
     printf("Inserting \"0\", \"2\", ..., \"N-1\" (N=%lu)\n", n);
     struct timespec t0, t1, t2, t3;
 
@@ -431,6 +432,66 @@ test_synthetic(u64 n)
     print_peak_mem();
     return EXIT_SUCCESS;
 }
+
+static int
+test_synthetic_external(u64 N)
+{
+    printf("Using external key storage\n");
+    printf("Inserting \"0\", \"2\", ..., \"N-1\" (N=%lu)\n", N);
+    struct timespec t0, t1, t2, t3;
+
+    size_t kss = N; // one '\0' per number
+    {
+        size_t t = 1;
+        while(t <=10*N)
+        {
+            if(t <= N)
+                kss += (N+1-t);
+            t*=10;
+        }
+    }
+
+    clock_gettime(CLOCK_REALTIME, &t0);
+    ddict * dict = ddict_new(0);
+    char * key_storage = malloc(kss);
+    char * key_write = key_storage;
+    for(u64 n = 0; n < N; n++)
+    {
+        u64 nwritten = sprintf(key_write, "%lu", n);
+        if(ddict_add(dict, key_write, 0)) {
+            printf("Failed to add '%s'\n", key_write);
+            exit(EXIT_FAILURE);
+        }
+        key_write += nwritten + 1;
+    }
+    clock_gettime(CLOCK_REALTIME, &t1);
+    printf("Insert: %.3f ms (avg: %.3f ns)\n", 1000.0 * timespec_diff(&t1, &t0),
+           1000000000.0 * timespec_diff(&t1, &t0) / (double) N);
+
+    printf("Assuring that \"0\", \"1\", ... are in the dict\n");
+    clock_gettime(CLOCK_REALTIME, &t2);
+    key_write = key_storage;
+    for(u64 n = 0; n < N; n++)
+    {
+        u64 nwritten = sprintf(key_write, "%lu", n);
+        if( ddict_get(dict, key_write) == NULL) {
+            printf("Failed to retrieve '%s'\n", key_write);
+            exit(EXIT_FAILURE);
+        }
+        key_write += nwritten + 1;
+    }
+    ddict_free(dict);
+    clock_gettime(CLOCK_REALTIME, &t3);
+
+    printf("Scan: %.3f ms (avg: %.3f ns)\n", 1000.0 * timespec_diff(&t3, &t2),
+           1000000000.0 * timespec_diff(&t3, &t2) / (double) N);
+    printf("Total: %.3f ms\n",
+           1000.0 * (timespec_diff(&t1, &t0) + timespec_diff(&t3, &t2)));;
+
+    print_peak_mem();
+    return EXIT_SUCCESS;
+}
+
 
 static int
 test_dictionary(int argc, char ** argv)
@@ -505,6 +566,10 @@ main(int argc, char ** argv)
         exit(EXIT_SUCCESS);
     }
 
-    u64 n = atol(argv[1]);
-    return test_synthetic(n);
+    int n = atoi(argv[1]);
+    if(n > 0){
+        return test_synthetic_external(n);
+    } if( n < 0) {
+        return test_synthetic(-n);
+    }
 }
