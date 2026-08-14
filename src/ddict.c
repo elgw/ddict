@@ -20,15 +20,15 @@ typedef uint64_t u64;
 
 // Settings
 // The storage for entries will be half that size
-#define DDICT_INDEX_INITIAL_SIZE 8
+#define DDICT_INDEX_INITIAL_SIZE 32
 // The index will be at least this factor
 // larger than the number of inserted elements
-#define DDICT_INDEX_FACTOR 2
+#define DDICT_INDEX_FACTOR 3
 // To rebuild the index is quite expensive. A large grow rate
 // will in general be faster but require more memory.
 #define DDICT_INDEX_GROWTH_RATE 4
 // factor to grow entry storage with when full
-#define DDICT_ENTRIES_GROWTH_RATE 1.5
+#define DDICT_ENTRIES_GROWTH_RATE 2
 // factor to grow key storage with when full
 #define DDICT_KEY_STORAGE_GROWTH_RATE 2
 

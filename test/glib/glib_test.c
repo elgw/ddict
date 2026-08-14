@@ -109,14 +109,6 @@ int main(int argc, char ** argv)
     printf("Inserting '0', '1', ..., 'N-1 (N=%lu)'\n", N);
     struct timespec t0, t1, t2, t3;
 
-    clock_gettime(CLOCK_REALTIME, &t0);
-
-    // g_direct_hash would be faster and would work here,
-    // however that would be comparing different things.
-
-    GHashTable* H = g_hash_table_new (_ddict_wordhash,
-                                      g_str_equal);
-
     // Figure out how large buffer we will need;
     // N = 1 -> "0\n", i.e. 2
     // N = 2 -> "0\n1\n", i.e. 4 etc
@@ -130,6 +122,14 @@ int main(int argc, char ** argv)
             t*=10;
         }
     }
+
+    clock_gettime(CLOCK_REALTIME, &t0);
+
+    // g_direct_hash would be faster and would work here,
+    // however that would be comparing different things.
+
+    GHashTable* H = g_hash_table_new (_ddict_wordhash,
+                                      g_str_equal);
 
     char * key_storage = malloc(kss);
     char * key_write = key_storage;
