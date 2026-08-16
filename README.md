@@ -267,6 +267,19 @@ Results:
 
 </details>
 
+<details><summary>AMD Ryzen 3 PRO 3300U</summary>
+
+| method | N | t_create [ms] | t_scan [ms] | t_total [ms] | VmHWM [MB] |
+| --- | ---:| ---:| ---:| ---:| ---:|
+| ./ddict_test | 1e+05 | 12 | 7 | 19 | 6 |
+| ./ddict_test | 1e+06 | 134 | 75 | 210 | 55 |
+| ./ddict_test | 1e+07 | 1,343 | 907 | 2,250 | 442 |
+| ./glib_test | 1e+05 | 15 | 9 | 24 | 5 |
+| ./glib_test | 1e+06 | 251 | 93 | 345 | 42 |
+| ./glib_test | 1e+07 | 2,230 | 1,118 | 3,348 | 342 |
+
+</details>
+
 ### Notes
 
 - The memory usage of `ddict` can be reduced as the cost of speed, see
