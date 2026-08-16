@@ -1,3 +1,7 @@
+# To download and build libcdict:
+# $ cd test
+# $ build_libcdict.sh
+
 CFLAGS=-Wall -Wextra
 
 DEBUG?=0
@@ -39,9 +43,6 @@ glib_test: test/glib_test.c test/common.h
 cdict_test: test/cdict_test.c test/common.h
 	$(CC) $(CFLAGS) test/cdict_test.c $(LDFLAGS) -o cdict_test
 
-# Assumes that libcdict it present, build it with
-# $ cd test
-# $ build_libcdict.sh
 LDFLAGS_LIBCDICT=$(LDFLAGS) -Ltest/libcdict/builddir -lcdict
 LDFLAGS_LIBCDICT+=-Wl,-rpath=test/libcdict/builddir/
 libcdict_test: test/libcdict_test.c test/common.h

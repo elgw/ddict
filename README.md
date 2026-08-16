@@ -248,6 +248,25 @@ Results:
 | libcdict | 1e8 |       104,044 |      35,993 |      140,037 |     30,224 |
 |          |     |               |             |              |            |
 
+<details><summary>Raspberry Pi 4 Model B Rev 1.5, 4 GB RAM, Debian 12</summary>
+
+| method | N   | t_create [ms] | t_scan [ms] | t_total [ms] | VmHWM [MB] |
+|--------|-----|--------------:|------------:|-------------:|-----------:|
+| ddict  | 1e5 |            39 |          26 |       **65** |          6 |
+| ddict  | 1e6 |           422 |         258 |      **680** |         55 |
+| ddict  | 1e7 |         4,091 |       2,915 |    **7,007** |        442 |
+|        |     |               |             |              |            |
+| glib   | 1e5 |            52 |          34 |           86 |      **5** |
+| glib   | 1e6 |         1,006 |         322 |        1,429 |     **42** |
+| glib   | 1e7 |         6,257 |       3,288 |        9,545 |    **341** |
+|        |     |               |             |              |            |
+| python | 1e5 |            77 |          52 |          130 |         20 |
+| python | 1e6 |           898 |         635 |        1,533 |        101 |
+| python | 1e7 |        10,771 |       8,223 |       18,994 |        876 |
+|        |     |               |             |              |            |
+
+</details>
+
 ### Notes
 
 - The memory usage of `ddict` can be reduced as the cost of speed, see
