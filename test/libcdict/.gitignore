@@ -1,1 +1,4 @@
-cdicts_test
+builddir
+*~
+src/*~
+

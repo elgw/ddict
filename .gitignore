@@ -1,4 +1,10 @@
-text.txt
-dictwords.txt
+*.o
+*.txt
+
+test/libcdict/
+
 ddict_test
-ddict.o
+cdict_test
+glib_test
+go_test
+libcdict_test
