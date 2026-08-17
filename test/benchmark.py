@@ -2,7 +2,7 @@ import subprocess
 import time
 import sys
 import argparse
-
+import os
 
 binaries = ['./ddict_test',
             './glib_test',
@@ -71,6 +71,11 @@ def benchmark(binary, N, timeout):
     print(f'| {balias} | {N:.0e} | {summary['t_insert']:,.0f} | {summary['t_scan']:,.0f} | {summary['t_total']:,.0f} | {summary['VmHWM']/1000:,.0f} |')
 
 if __name__ == '__main__':
+
+    for bin in binaries:
+        if not os.path.isfile(bin):
+            print(f'Can not find {bin}')
+            binaries.remove(bin)
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--Nmax", default=1e8, type=int, help="Largest number of elements to insert", required=False)
