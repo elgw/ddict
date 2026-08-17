@@ -210,7 +210,7 @@ Test were run with an Intel i7-6700K, GCC 13.3.0, [glib 2.39](https://docs.gtk.o
 3.12.3, go 1.26.5, [libcdict
 1.51](https://gitlab.com/rob.izzard/libcdict), [cdict.h
 afefd33](https://github.com/RobusGauli/cdict.h)). C-programs were
-compiled with `-O3 -ffast-math -DNDEBUG -march=native -mtune=native`
+compiled with `-O3 -ffast-math -DNDEBUG`
 and linked with `-flto`.
 
 Results:
@@ -325,4 +325,4 @@ Results:
   internally. When the key storage is full, it is `realloc`'ed. That is not
   necessary since we could split up the keys and store them in
   multiple buffers.  `ddict` runs slightly faster when the keys are kept
-  in a fixed buffer (not shown in the table).
+  in a fixed buffer (not shown in the table(s)).
