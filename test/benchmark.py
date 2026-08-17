@@ -47,7 +47,8 @@ def run_bin(bin, N):
         if not prop in result.keys():
             print(f'Could not get {prop} from binary {bin}')
             print(f'No line starting with {alias} in the output')
-            print(f'Command {' '.join(cmd)}')
+            cmdstr = ' '.join(cmd)
+            print(f'Command {cmdstr}')
             print(result)
             sys.exit(1)
 
