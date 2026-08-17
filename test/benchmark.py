@@ -69,7 +69,7 @@ def benchmark(binary, N, timeout):
         summary[prop] = min(values)
 
     balias = bin_alias[binary]
-    print(f'| {balias} | {N:.0e} | {summary['t_insert']:,.0f} | {summary['t_scan']:,.0f} | {summary['t_total']:,.0f} | {summary['VmHWM']/1000:,.0f} |')
+    print(f"| {balias} | {N:.0e} | {summary['t_insert']:,.0f} | {summary['t_scan']:,.0f} | {summary['t_total']:,.0f} | {summary['VmHWM']/1000:,.0f} |")
 
 if __name__ == '__main__':
 
