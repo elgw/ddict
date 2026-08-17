@@ -27,7 +27,7 @@ def test_dict(dictfile, txtfile):
 
     print(f'Scanned {n_known+n_unknown} found {n_known} known and {n_unknown}')
 
-    print(f'Construct: {1000*(t1-t0):.3f} ms')
+    print(f'Insert: {1000*(t1-t0):.3f} ms')
     print(f'Scan: {1000*(t2-t1):.3f} ms')
     print(f'Total: {1000*(t2-t0):.3f} ms')
 
@@ -43,7 +43,7 @@ def test_synthetic(N):
         assert(dct[f'{n}'] == 0)
     t2 = time.perf_counter()
 
-    print(f'Construct: {1000*(t1-t0):.3f} ms')
+    print(f'Insert: {1000*(t1-t0):.3f} ms')
     print(f'Scan: {1000*(t2-t1):.3f} ms')
     print(f'Total: {1000*(t2-t0):.3f} ms')
 

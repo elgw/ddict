@@ -29,9 +29,9 @@ func main() {
 
 	t3 := time.Since(t2)
 
-	fmt.Println("t_create", t1)
-	fmt.Println("t_scan", t3)
-	fmt.Println("Total time:", t1 + t3)
+	fmt.Println("Insert:", t1.Milliseconds(), "ms")
+	fmt.Println("Scan:", t3.Milliseconds(), "ms")
+	fmt.Println("Total:", (t1 + t3).Milliseconds(), "ms")
 
 	f3, _ := os.Open("/proc/self/status")
 	defer f3.Close()
