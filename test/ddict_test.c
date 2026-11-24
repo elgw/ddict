@@ -59,17 +59,41 @@ void print_ret(int ret){
     }
 }
 
-int ddict_p_add(ddict * dict, const char * key,  const char * value)
+// Go over the list of entries and see that all can be retrieved
+void ddict_validate_all(ddict * dict)
+{
+    for(u64 kk = 1; kk <= dict->n_entries; kk++)
+    {
+
+        ddict_entry * ent = &dict->entries[kk];
+        //printf("%s\n", ent->key);
+        ddict_entry * ent2 = ddict_get(dict, ent->key);
+        if(ent != ent2){
+            printf("ERROR: The dict is inconsistent. There is an entry by the key '%s' "
+                   "that can't be found with ddict_get()\n", ent->key);
+            exit(EXIT_FAILURE);
+        }
+    }
+}
+
+int ddict_p_add(ddict * dict, const char * key,  char * value)
 {
     printf("dict_add['%s'] = '%s'\n", key, value);
     int ret = ddict_add(dict, key, value);
     print_ret(ret);
+    ddict_validate_all(dict);
     return ret;
 }
 
 int ddict_p_remove(ddict * dict, const char * key, void (*ffun)(void *)){
-    printf("dict_remove['%s']\n", key);
+    printf("dict_remove['%s']", key);
+    if(ffun){
+        printf(" (free-function provided)\n");
+    } else {
+        printf(" (will not free the value)\n");
+    }
     int ret = ddict_remove(dict, key, ffun);
+    ddict_validate_all(dict);
     print_ret(ret);
     return ret;
 }

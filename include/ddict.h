@@ -65,7 +65,7 @@ extern "C" {
     typedef enum {U8=1, U16=2, U32=4, U64=8} indices_bits;
 
     typedef union { // anonymous unions are not part of C99 :(
-        uint8_t * U8;
+        uint8_t *  U8;
         uint16_t * U16;
         uint32_t * U32;
         uint64_t * U64;
