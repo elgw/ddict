@@ -311,6 +311,42 @@ Results:
 
 </details>
 
+<details><summary>AMD Ryzen 5 5600</summary>
+
+| method   |     N | t_create [ms] | t_scan [ms] | t_total [ms] | VmHWM [MB] |
+|----------|------:|--------------:|------------:|-------------:|-----------:|
+| ddict    | 1e+05 |             8 |           4 |           12 |          6 |
+| ddict    | 1e+06 |            89 |          43 |          132 |         55 |
+| ddict    | 1e+07 |           853 |         523 |        1,376 |        442 |
+| ddict    | 1e+08 |         9,670 |       4,552 |       14,222 |      5,093 |
+|          |       |               |             |              |            |
+| glib     | 1e+05 |             9 |           5 |           14 |          5 |
+| glib     | 1e+06 |           147 |          48 |          195 |         42 |
+| glib     | 1e+07 |         1,269 |         668 |        1,942 |        341 |
+| glib     | 1e+08 |        21,729 |       8,441 |       30,169 |      2,968 |
+|          |       |               |             |              |            |
+| cdict.h  | 1e+05 |            14 |           6 |           19 |         11 |
+| cdict.h  | 1e+06 |           179 |         109 |          290 |         80 |
+| cdict.h  | 1e+07 |         2,902 |       1,882 |        4,784 |        636 |
+| cdict.h  | 1e+08 |        39,001 |      18,728 |       57,729 |     10,254 |
+|          |       |               |             |              |            |
+| go       | 1e+05 |            11 |           4 |           16 |          8 |
+| go       | 1e+06 |           204 |         102 |          307 |         80 |
+| go       | 1e+07 |         3,663 |       1,820 |        5,484 |        684 |
+| go       | 1e+08 |        46,246 |      23,259 |       69,506 |      5,830 |
+|          |       |               |             |              |            |
+| Python   | 1e+05 |            14 |           9 |           23 |         19 |
+| Python   | 1e+06 |           184 |         136 |          322 |         87 |
+| Python   | 1e+07 |         3,386 |       3,016 |        6,402 |        720 |
+| Python   | 1e+08 |        45,732 |      28,710 |       74,441 |     11,234 |
+|          |       |               |             |              |            |
+| libcdict | 1e+05 |            40 |          19 |           60 |         31 |
+| libcdict | 1e+06 |           547 |         341 |          891 |        292 |
+| libcdict | 1e+07 |         6,533 |       4,522 |       11,056 |      2,946 |
+| libcdict | 1e+08 |        78,467 |      49,241 |      127,708 |     30,224 |
+|          |       |               |             |              |            |
+
+</details>
 
 ### Notes
 
@@ -325,4 +361,4 @@ Results:
   internally. When the key storage is full, it is `realloc`'ed. That is not
   necessary since we could split up the keys and store them in
   multiple buffers.  `ddict` runs slightly faster when the keys are kept
-  in a fixed buffer (not shown in the table(s)).
+  in a fixed buffer (about 7%, not shown in the table(s)).

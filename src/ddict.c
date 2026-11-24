@@ -110,7 +110,7 @@ _ddict_wordhash(const char * word)
 }
 
 static inline u64
-_ddict_entry_id_from_index(const ddict * dict, u64 idx)
+_ddict_entry_id_from_index(const ddict * dict, const u64 idx)
 {
     switch(dict->index_type)
     {
@@ -129,8 +129,12 @@ _ddict_entry_id_from_index(const ddict * dict, u64 idx)
 }
 
 static inline u64
-_ddict_get_free_index(ddict * dict, u64 idx) {
-
+#ifdef DDICT_STATS
+_ddict_get_free_index(ddict * dict, u64 idx)
+#else
+    _ddict_get_free_index(const ddict * dict, u64 idx)
+#endif
+{
     switch(dict->index_type)
     {
     case U8:
@@ -182,7 +186,7 @@ _ddict_get_free_index(ddict * dict, u64 idx) {
 }
 
 static inline void
-_ddict_set_index(ddict * dict, u64 idx, u64 value)
+_ddict_set_index(ddict * dict, const u64 idx, const u64 value)
 {
     assert(value != 0);
     switch(dict->index_type) {
@@ -277,7 +281,7 @@ ddict_new_with_size(const int manage_keys,
 }
 
 ddict *
-ddict_new(int manage_keys) {
+ddict_new(const int manage_keys) {
     return ddict_new_with_size(manage_keys, DDICT_INDEX_INITIAL_SIZE, 1);
 }
 
@@ -425,7 +429,7 @@ ddict_grow_indices(ddict * dict)
 
 int
 ddict_add(ddict * dict,
-          char * word, void * value)
+          const char * word, void * value)
 {
     const u64 hash = _ddict_wordhash(word);
 
