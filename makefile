@@ -54,3 +54,10 @@ go_test:
 	cp test/go/dict go_test
 
 all: ddict_test cdict_test glib_test go_test libcdict_test
+
+clean:
+	rm -rf ddict_test
+	rm -rf cdict_test
+	rm -rf glib_test
+	rm -rf go_test
+	rm -rf libcdict_test
