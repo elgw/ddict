@@ -1,4 +1,4 @@
-## ddict 1.0.2
+## ddict 1.0.4
 
 An throwaway implementation of a dict data structure inspired by the
 approach taken by
@@ -26,8 +26,8 @@ load but cause redundant calculations.
 
 Limitations/missing features
 
-- Keys can't be removed once inserted (but the "value" of the entries
-  can be altered).
+- The time it takes to remove an entry grows linearly with the number
+  of entries in the dict.
 - Keys are `'\0'` terminated strings.
 
 Internals
@@ -48,6 +48,7 @@ void ddict_free(ddict * dict);
 ddict_entry * ddict_get(const ddict *, const char * key);
 int ddict_add(ddict * dict, char * key, void * value);
 int ddict_update_entry(ddict * dict, const char * key, void * value);
+int ddict_remove(ddict * dict, const char * key, void (*ffun)(void *));
 ```
 
 ## Performance indicators (sanity check)

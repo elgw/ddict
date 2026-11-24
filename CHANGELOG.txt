@@ -1,2 +1,2 @@
 1.0.4 -- Added dict_remove to remove an entry by key.
-1.0.3 -- Set keys to be const.
+1.0.3 -- Set keys to be const in ddict_add.

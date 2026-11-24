@@ -122,8 +122,12 @@ extern "C" {
               const char * key, void * value);
 
     // Remove an entry by key
-    // WARNING: This operation is O(n)
     // Unless ffun is NULL it will be called on the value of the entry.
+    //
+    // WARNING: This operation is O(n)
+    //
+    // WARNING: If the dict manages the keys, the key will not be freed until
+    //          the dict is.
     int
     ddict_remove(ddict * dict,
                  const char * key,
