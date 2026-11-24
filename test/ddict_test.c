@@ -51,6 +51,45 @@ example2(void)
     return;
 }
 
+void print_ret(int ret){
+    if(ret == 0){
+        printf("OK\n");
+    } else {
+        printf("Fail\n");
+    }
+}
+
+int ddict_p_add(ddict * dict, const char * key,  const char * value)
+{
+    printf("dict_add['%s'] = '%s'\n", key, value);
+    int ret = ddict_add(dict, key, value);
+    print_ret(ret);
+    return ret;
+}
+
+int ddict_p_remove(ddict * dict, const char * key, void (*ffun)(void *)){
+    printf("dict_remove['%s']\n", key);
+    int ret = ddict_remove(dict, key, ffun);
+    print_ret(ret);
+    return ret;
+}
+
+static void
+example3(void)
+{
+    printf("#\n# Example 3 -- Removing entries\n#\n");
+    ddict * dict = ddict_new(1);
+    char * color = strdup("yellow");
+    ddict_p_add(dict, "banana", color);
+    ddict_p_add(dict, "apple", "green");
+    ddict_p_add(dict, "blueberry", "blue");
+    ddict_p_remove(dict, "banana", free);
+    ddict_p_remove(dict, "apple", NULL);
+    ddict_p_remove(dict, "blueberry", NULL);
+    ddict_free(dict);
+    return;
+}
+
 typedef int64_t i64;
 
 typedef struct {
@@ -147,7 +186,7 @@ word_reader_read(wreader * reader, char ** result)
     assert(0);
     return 0;
 
- return_word:
+return_word:
     ;
     reader->word[wpos] = '\0';
     result[0] = reader->word;
@@ -477,6 +516,7 @@ main(int argc, char ** argv)
         printf("\n");
         example1();
         example2();
+        example3();
         exit(EXIT_SUCCESS);
     }
 
